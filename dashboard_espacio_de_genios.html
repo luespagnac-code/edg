@@ -460,19 +460,32 @@ function rResumen(){
   const selSum=(arr)=>SEL.reduce((s,i)=>s+(arr[i]??0),0);
   // Human-readable period label
   const fPeriod=()=>SEL.length===1?MO[SEL[0]]:`${MO[SEL[0]]} – ${MO[SEL[SEL.length-1]]}`;
-  // KPI card for period total (no MoM arrow)
+
+  // KPI card: period total (no arrow), custom border color
   const kpiPeriod=(label,val,fmt,cls,color)=>{
     const fFn=fmt==='money'?f$:fK;
     const valHtml=val==null||isNaN(val)?'—':fFn(val);
-    const topColor=color?`border-top-color:${color}`:'';
-    return `<div class="kpi ${cls}" style="${topColor}">
+    const style=color?`style="border-top-color:${color}"`:'';
+    return `<div class="kpi ${cls}" ${style}>
       <div class="kpi-label">${label}</div>
       <div class="kpi-val">${valHtml}</div>
       <div class="kpi-chg neu">Período: ${fPeriod()}</div>
     </div>`;
   };
 
-  // Campaign definitions (same as Meta Ads tab)
+  // KPI card: MoM comparison for last selected month, custom border color
+  const kpiMoM=(label,data,col)=>{
+    const v=data[m], pv=p!==null?data[p]:null;
+    if(v==null) return `<div class="kpi" style="border-top-color:${col}"><div class="kpi-label">${label}</div><div class="kpi-val">—</div><div class="kpi-chg neu">Sin datos</div></div>`;
+    const chg=pv!=null?pct(v,pv):null;
+    const chgHtml=chg!==null
+      ?`<div class="kpi-chg ${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${chg>=0?'+':''}${chg.toFixed(1)}% vs ${MO[p]}</div>`
+      :`<div class="kpi-chg neu">Sin mes anterior</div>`;
+    const prevHtml=pv!=null?`<div class="kpi-prev">${MO[p]}: ${f$(pv)}</div>`:'';
+    return `<div class="kpi" style="border-top-color:${col}"><div class="kpi-label">${label}</div><div class="kpi-val">${f$(v)}</div>${prevHtml}${chgHtml}</div>`;
+  };
+
+  // Campaign definitions
   const CAMP_DEFS=[
     {lbl:'TOFU · Tráfico IG', dk:'TOFU · Tráfico IG', col:'#6c3ee8'},
     {lbl:'TOFU · Alcance',    dk:'TOFU · Alcance',    col:'#8b5cf6'},
@@ -482,18 +495,30 @@ function rResumen(){
     {lbl:'BOFU · Retargeting',dk:'BOFU · Retargeting',col:'#ef4444'},
   ];
 
-  const totalAdsInv=CAMP_DEFS.reduce((s,c)=>s+selSum(D.ads.camps[c.dk].inv),0);
+  // Total inversión = dato oficial de fila 7 del sheet de resumen (D.centro.inv)
+  const totalCentroInv = selSum(D.centro.inv);
 
-  const campKpis=CAMP_DEFS.map(c=>
-    kpiPeriod(c.lbl, selSum(D.ads.camps[c.dk].inv), 'money','acc',c.col)
-  ).join('');
+  // Campaign KPIs con comparativa MoM
+  const campKpis=CAMP_DEFS.map(c=>kpiMoM(c.lbl, D.ads.camps[c.dk].inv, c.col)).join('');
+
+  // Altura dinámica del gráfico horizontal según meses seleccionados
+  const hChartH = Math.max(220, SEL.length * 80 + 60);
 
   document.getElementById('p-resumen').innerHTML=`
     <div class="pbadge">📊 ${MO[m]}${pLabel}</div>
 
+    ${sec('Inversión Meta Ads · Centro — Desglose por campaña')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+      ${kpiPeriod('Total invertido · Centro', totalCentroInv, 'money','ads')}
+      ${campKpis}
+    </div>
+    <div class="g1" style="margin-top:8px">
+      ${cc('r-camp-inv','Inversión por campaña · Meta Ads','$ por mes seleccionado',hChartH)}
+    </div>
+
     ${sec('🏫 Convertidos en Centro')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
-      ${kpiPeriod('Inversión total', selSum(D.centro.inv), 'money','acc')}
+      ${kpiPeriod('Inversión total (fila 7)', totalCentroInv, 'money','acc')}
       ${kpi('Pre-Kinder',D.centro.pk_monto,'money','acc')}
       ${kpi('Terapias',D.centro.ter_monto,'money','acc')}
       ${kpi('Valoraciones',D.centro.valor,'money','acc')}
@@ -502,15 +527,6 @@ function rResumen(){
     <div class="g2" style="margin-top:8px">
       ${cc('r-centro-total','Total facturado · Centro','Período seleccionado',240)}
       ${cc('r-centro-detail','Desglose por servicio','Pre-Kinder, Terapias, Valoraciones y Capacitaciones',240)}
-    </div>
-
-    ${sec('Inversión Meta Ads · desglose por campaña')}
-    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
-      ${kpiPeriod('Total Meta Ads', totalAdsInv, 'money','ads')}
-      ${campKpis}
-    </div>
-    <div class="g1" style="margin-top:8px">
-      ${cc('r-camp-inv','Inversión por campaña','Período seleccionado',300)}
     </div>
 
     ${sec('🏗️ Proyecto · Comercializadora')}
@@ -544,6 +560,31 @@ function rResumen(){
     <div class="g1">${cc('r-imp','Impresiones / Visualizaciones por mes','Views totales IG vs Visualizaciones totales FB',280)}</div>
   `;
 
+  // ── Gráfico de campaña: barras HORIZONTALES (meses en Y, $ en X) ──
+  mk('r-camp-inv',{type:'bar',
+    data:{
+      labels:selLbls(),
+      datasets:CAMP_DEFS.map(c=>({
+        label:c.lbl,
+        data:SEL.map(i=>D.ads.camps[c.dk].inv[i]??0),
+        backgroundColor:c.col+'BB',borderColor:c.col,borderWidth:1.5,borderRadius:4,
+      }))
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true,padding:12,font:{size:11}}},
+        tooltip:{callbacks:{label(ctx){return ` ${ctx.dataset.label}: ${f$(ctx.parsed.x)}`;} }}
+      },
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{callback:v=>'$'+fK(v),font:{size:11}}},
+        y:{grid:{display:false},ticks:{font:{size:12}}}
+      }
+    }
+  });
+
   // ── Centro charts (SEL months) ──
   gBar('r-centro-total',[
     {label:'Total Centro ($)',data:D.centro.total,color:C.acc},
@@ -555,11 +596,6 @@ function rResumen(){
     {label:'Valoraciones',  data:D.centro.valor,    color:'#a78bfa'},
     {label:'Capacitaciones',data:D.centro.capac,    color:'#c4b5fd'},
   ],v=>'$'+fK(v));
-
-  // ── Campaign investment grouped bar ──
-  gBar('r-camp-inv', CAMP_DEFS.map(c=>({
-    label:c.lbl, data:D.ads.camps[c.dk].inv, color:c.col,
-  })),v=>'$'+fK(v));
 
   // ── Proyecto charts (SEL months) ──
   gBar('r-proy-conv',[
