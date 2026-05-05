@@ -245,6 +245,7 @@ const D = {
   },
   ads:{
     inv:      [7118.12,6501.30,10808.61],
+    invCentro:[null,null,null],
     msgs:     [118,   129,   170],
     leads:    [0,     2,     30],
     camps:{
@@ -456,33 +457,34 @@ function rResumen(){
   const m=lastM(), p=prevM();
   const pLabel=p!==null?` · vs ${MO[p]}`:'';
 
-  // Sum all selected months for a data array
+  // Suma meses seleccionados de un array
   const selSum=(arr)=>SEL.reduce((s,i)=>s+(arr[i]??0),0);
-  // Human-readable period label
+  // Label del período
   const fPeriod=()=>SEL.length===1?MO[SEL[0]]:`${MO[SEL[0]]} – ${MO[SEL[SEL.length-1]]}`;
 
-  // KPI card: period total (no arrow), custom border color
-  const kpiPeriod=(label,val,fmt,cls,color)=>{
-    const fFn=fmt==='money'?f$:fK;
-    const valHtml=val==null||isNaN(val)?'—':fFn(val);
+  // KPI universal: 1 mes → valor de ese mes + comparativa; varios meses → suma del período
+  const kpiAuto=(label,data,fmt,cls,color)=>{
+    const fFn=fmt==='money'?f$:fmt==='pct'?(n=>n==null?'—':fN(n,1)+'%'):fK;
     const style=color?`style="border-top-color:${color}"`:'';
-    return `<div class="kpi ${cls}" ${style}>
-      <div class="kpi-label">${label}</div>
-      <div class="kpi-val">${valHtml}</div>
-      <div class="kpi-chg neu">Período: ${fPeriod()}</div>
-    </div>`;
-  };
-
-  // KPI card: MoM comparison for last selected month, custom border color
-  const kpiMoM=(label,data,col)=>{
-    const v=data[m], pv=p!==null?data[p]:null;
-    if(v==null) return `<div class="kpi" style="border-top-color:${col}"><div class="kpi-label">${label}</div><div class="kpi-val">—</div><div class="kpi-chg neu">Sin datos</div></div>`;
-    const chg=pv!=null?pct(v,pv):null;
-    const chgHtml=chg!==null
-      ?`<div class="kpi-chg ${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${chg>=0?'+':''}${chg.toFixed(1)}% vs ${MO[p]}</div>`
-      :`<div class="kpi-chg neu">Sin mes anterior</div>`;
-    const prevHtml=pv!=null?`<div class="kpi-prev">${MO[p]}: ${f$(pv)}</div>`:'';
-    return `<div class="kpi" style="border-top-color:${col}"><div class="kpi-label">${label}</div><div class="kpi-val">${f$(v)}</div>${prevHtml}${chgHtml}</div>`;
+    if(SEL.length===1){
+      // Un mes: mostrar valor + comparativa vs mes anterior en el array
+      const idx=SEL[0];
+      const v=data[idx];
+      const pidx=idx>0?idx-1:null;
+      const pv=pidx!==null?data[pidx]:null;
+      if(v==null||v===undefined) return `<div class="kpi ${cls}" ${style}><div class="kpi-label">${label}</div><div class="kpi-val">—</div><div class="kpi-chg neu">Sin datos</div></div>`;
+      const chg=pv!=null?pct(v,pv):null;
+      const chgHtml=chg!==null
+        ?`<div class="kpi-chg ${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${chg>=0?'+':''}${chg.toFixed(1)}% vs ${MO[pidx]}</div>`
+        :`<div class="kpi-chg neu">Sin mes anterior</div>`;
+      const prevHtml=pv!=null?`<div class="kpi-prev">${MO[pidx]}: ${fFn(pv)}</div>`:'';
+      return `<div class="kpi ${cls}" ${style}><div class="kpi-label">${label}</div><div class="kpi-val">${fFn(v)}</div>${prevHtml}${chgHtml}</div>`;
+    } else {
+      // Varios meses: mostrar suma del período
+      const total=selSum(data);
+      const valHtml=total==null||isNaN(total)?'—':fFn(total);
+      return `<div class="kpi ${cls}" ${style}><div class="kpi-label">${label}</div><div class="kpi-val">${valHtml}</div><div class="kpi-chg neu">Total: ${fPeriod()}</div></div>`;
+    }
   };
 
   // Campaign definitions
@@ -495,13 +497,14 @@ function rResumen(){
     {lbl:'BOFU · Retargeting',dk:'BOFU · Retargeting',col:'#ef4444'},
   ];
 
-  // Total inversión = dato oficial de fila 7 del sheet de resumen (D.centro.inv)
-  const totalCentroInv = selSum(D.centro.inv);
+  // ── Fuentes correctas ──
+  // Meta Ads total: fila 4 hoja Meta Ads "Inversion total centro" → D.ads.invCentro
+  //   Si esa fila no existe en el sheet, se calcula sumando las 6 campañas
+  const campSum = MO.map((_,i) => CAMP_DEFS.reduce((s,c) => s+(D.ads.camps[c.dk].inv[i]??0), 0));
+  const adsInvTotal = D.ads.invCentro.some(v=>v!=null&&v!==0) ? D.ads.invCentro : campSum;
+  const campKpis=CAMP_DEFS.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
 
-  // Campaign KPIs con comparativa MoM
-  const campKpis=CAMP_DEFS.map(c=>kpiMoM(c.lbl, D.ads.camps[c.dk].inv, c.col)).join('');
-
-  // Altura dinámica del gráfico horizontal según meses seleccionados
+  // Altura dinámica del gráfico horizontal
   const hChartH = Math.max(220, SEL.length * 80 + 60);
 
   document.getElementById('p-resumen').innerHTML=`
@@ -509,7 +512,7 @@ function rResumen(){
 
     ${sec('Inversión Meta Ads · Centro — Desglose por campaña')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
-      ${kpiPeriod('Total invertido · Centro', totalCentroInv, 'money','ads')}
+      ${kpiAuto('Total Meta Ads · Centro', adsInvTotal, 'money','ads')}
       ${campKpis}
     </div>
     <div class="g1" style="margin-top:8px">
@@ -518,11 +521,11 @@ function rResumen(){
 
     ${sec('🏫 Convertidos en Centro')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
-      ${kpiPeriod('Inversión total (fila 7)', totalCentroInv, 'money','acc')}
-      ${kpi('Pre-Kinder',D.centro.pk_monto,'money','acc')}
-      ${kpi('Terapias',D.centro.ter_monto,'money','acc')}
-      ${kpi('Valoraciones',D.centro.valor,'money','acc')}
-      ${kpi('Capacitaciones',D.centro.capac,'money','acc')}
+      ${kpiAuto('Inversión total · Centro', D.centro.inv, 'money','acc')}
+      ${kpiAuto('Pre-Kinder',D.centro.pk_monto,'money','acc')}
+      ${kpiAuto('Terapias',D.centro.ter_monto,'money','acc')}
+      ${kpiAuto('Valoraciones',D.centro.valor,'money','acc')}
+      ${kpiAuto('Capacitaciones',D.centro.capac,'money','acc')}
     </div>
     <div class="g2" style="margin-top:8px">
       ${cc('r-centro-total','Total facturado · Centro','Período seleccionado',240)}
@@ -531,11 +534,11 @@ function rResumen(){
 
     ${sec('🏗️ Proyecto · Comercializadora')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
-      ${kpiPeriod('Inversión total', selSum(D.proy.inv), 'money','ads')}
-      ${kpi('Leads recibidos',D.proy.leads,'k','ads')}
-      ${kpi('Presupuestos enviados',D.proy.presup,'k','ads')}
-      ${kpi('Cierres',D.proy.cierres,'k','ads')}
-      ${kpi('Tasa de cierre',D.proy.tasa,'pct','ads')}
+      ${kpiAuto('Inversión total', D.proy.inv, 'money','ads')}
+      ${kpiAuto('Leads recibidos',D.proy.leads,'k','ads')}
+      ${kpiAuto('Presupuestos enviados',D.proy.presup,'k','ads')}
+      ${kpiAuto('Cierres',D.proy.cierres,'k','ads')}
+      ${kpiAuto('Tasa de cierre',D.proy.tasa,'pct','ads')}
     </div>
     <div class="g2" style="margin-top:8px">
       ${cc('r-proy-conv','Leads vs Cierres concretados','Período seleccionado',240)}
@@ -544,10 +547,10 @@ function rResumen(){
 
     ${sec('Instagram · Métricas principales')}
     <div class="kpi-grid">
-      ${kpi('Alcance total',D.ig.alcance,'k','ig')}
-      ${kpi('Clics al sitio web',D.ig.clics,'k','ig')}
-      ${kpi('Impresiones',D.ig.views,'k','ig')}
-      ${kpi('Nuevos seguidores',D.ig.seg,'k','ig')}
+      ${kpiAuto('Alcance total',D.ig.alcance,'k','ig')}
+      ${kpiAuto('Clics al sitio web',D.ig.clics,'k','ig')}
+      ${kpiAuto('Impresiones',D.ig.views,'k','ig')}
+      ${kpiAuto('Nuevos seguidores',D.ig.seg,'k','ig')}
     </div>
 
     ${sec('Alcance orgánico · Instagram vs Facebook')}
@@ -999,7 +1002,7 @@ function rblLast(rows,lbl){
 }
 
 // Extract numbers from active column indices
-function nums(row,cols){return cols.map(c=>{const n=parseFloat((row[c]||'').replace(/,/g,''));return isNaN(n)?0:n;});}
+function nums(row,cols){return cols.map(c=>{const raw=(row[c]||'').replace(/[$,%]/g,'').replace(/,/g,'').trim();if(!raw)return null;const n=parseFloat(raw);return isNaN(n)?null:n;});}
 
 // Extract text strings from active column indices
 function txts(row,cols){return cols.map(c=>(row[c]||'').trim());}
@@ -1157,6 +1160,7 @@ async function loadSheetData(){
     // ── Meta Ads
     if(ads&&ac){
       D.ads.inv=nums(rbl(ads,'Inversión total ($)'),ac);
+      D.ads.invCentro=nums(rbl(ads,'Inversión total Centro ($)'),ac);
       Object.assign(D.ads.camps,extractAdsCamps(ads,ac));
       D.ads.alcTotal=MO.map((_,i)=>Object.values(D.ads.camps).reduce((s,c)=>s+(c.alc[i]||0),0));
       D.ads.insights =ac.map(c=>(rblLast(ads,'INSIGHT')[c]||'').trim());
