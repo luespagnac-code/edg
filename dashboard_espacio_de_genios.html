@@ -599,15 +599,21 @@ function rResumen(){
   });
 
   // ── Gráfico Proyecto: barras HORIZONTALES (meses en Y, $ en X) ──
-  mk('r-camp-proy-inv',{type:'bar',
-    data:{
-      labels:selLbls(),
-      datasets:CAMP_PROY.map(c=>({
+  // Si hay datos por campaña los muestra desglosados; si no, usa el total del sheet
+  const _proyHasCampData = CAMP_PROY.some(c => SEL.some(i => (D.ads.camps[c.dk].inv[i]??0) > 0));
+  const _proyDatasets = _proyHasCampData
+    ? CAMP_PROY.map(c=>({
         label:c.lbl,
         data:SEL.map(i=>D.ads.camps[c.dk].inv[i]??0),
         backgroundColor:c.col+'BB',borderColor:c.col,borderWidth:1.5,borderRadius:4,
       }))
-    },
+    : [{
+        label:'Inversión Proyecto',
+        data:SEL.map(i=>D.ads.invProy[i]??0),
+        backgroundColor:'#0ea5e9BB',borderColor:'#0ea5e9',borderWidth:1.5,borderRadius:4,
+      }];
+  mk('r-camp-proy-inv',{type:'bar',
+    data:{labels:selLbls(), datasets:_proyDatasets},
     options:{
       indexAxis:'y',
       responsive:true,maintainAspectRatio:false,
@@ -642,7 +648,7 @@ function rResumen(){
   ]);
 
   gBar('r-proy-inv',[
-    {label:'Inversión ($)',data:D.proy.inv,color:C.ads},
+    {label:'Inversión Proyecto ($)',data:D.ads.invProy,color:C.ads},
   ],v=>'$'+fK(v));
 
   // ── IG vs FB comparison charts ──
