@@ -168,153 +168,128 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────
-const MO = ['Enero','Febrero','Marzo'];
+const MO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+const N12 = ()=>Array(12).fill(null);
 
 const D = {
   ig:{
-    views:    [253000,211490,214710],
-    alcance:  [97617, 93373, 91850],
-    inter:    [104,   115,   216],
-    seg:      [19,    14,    66],
-    visitas:  [2198,  1938,  1864],
-    clics:    [1975,  1717,  1455],  // clics al botón bio (= web)
-    intSeg:   [74,    54,    139],
-    intNoSeg: [30,    61,    92],
-    lkReels:  [19,    28,    40],
-    cmReels:  [0,     1,     0],
-    gdReels:  [0,     6,     20],
-    rpReels:  [1,     0,     2],
-    shReels:  [3,     4,     9],
-    lkPosts:  [12,    3,     19],
-    gdPosts:  [0,     4,     11],
-    shPosts:  [2,     0,     4],
+    views:    [253000,211490,214710,...Array(9).fill(null)],
+    alcance:  [97617, 93373, 91850, ...Array(9).fill(null)],
+    inter:    [104,   115,   216,   ...Array(9).fill(null)],
+    seg:      [19,    14,    66,    ...Array(9).fill(null)],
+    visitas:  [2198,  1938,  1864,  ...Array(9).fill(null)],
+    clics:    [1975,  1717,  1455,  ...Array(9).fill(null)],
+    intSeg:   [74,    54,    139,   ...Array(9).fill(null)],
+    intNoSeg: [30,    61,    92,    ...Array(9).fill(null)],
+    lkReels:  [19,    28,    40,    ...Array(9).fill(null)],
+    cmReels:  [0,     1,     0,     ...Array(9).fill(null)],
+    gdReels:  [0,     6,     20,    ...Array(9).fill(null)],
+    rpReels:  [1,     0,     2,     ...Array(9).fill(null)],
+    shReels:  [3,     4,     9,     ...Array(9).fill(null)],
+    lkPosts:  [12,    3,     19,    ...Array(9).fill(null)],
+    gdPosts:  [0,     4,     11,    ...Array(9).fill(null)],
+    shPosts:  [2,     0,     4,     ...Array(9).fill(null)],
     // Mejores contenidos
     cont:[
-      { nombre:['Post oficios','Tienda — Explicación de juegos','Reel proyecto'],
-        link:['https://www.instagram.com/reels/DUJ-jIHDqby/','https://www.instagram.com/p/DUbyUZ3k9aY/','https://www.instagram.com/p/DWFkpI7igbN/'],
-        views:[399,139744,11752], likes:[9,34,51] },
-      { nombre:['Regreso a clases','Tienda — Explicación de juegos','Recap Estaciones'],
-        link:['https://www.instagram.com/p/DTmFkLQiQ3_/','https://www.instagram.com/p/DU_4v56jyPX/','https://www.instagram.com/p/DWX0QAgEc6i/'],
-        views:[43132,38147,1135], likes:[24,8,25] },
+      { nombre:[...Array(12).fill(null)], link:[...Array(12).fill('')], views:[...Array(12).fill(null)], likes:[...Array(12).fill(null)] },
+      { nombre:[...Array(12).fill(null)], link:[...Array(12).fill('')], views:[...Array(12).fill(null)], likes:[...Array(12).fill(null)] },
     ],
-    insights:[
-      'Los contenidos publicados durante el mes fueron menores que en Diciembre pero lograron incrementar el engagement del mes anterior.\n\nEventos e historias de cumpleaños son muy llamativos e incrementan la interacción de la comunidad.\n\nLa cuenta no depende exclusivamente del volumen para sostener performance, pero sí necesita constancia para acelerar crecimiento.',
-      'El alcance continúa creciendo, lo que indica que la cuenta sigue ampliando su visibilidad y llegando a nuevas audiencias, consolidando el posicionamiento de marca.\n\nLas interacciones aumentaron un 23%, señal de que el contenido está generando mayor relevancia y conexión con la audiencia.\n\nLos reels se consolidan como el principal motor de descubrimiento, concentrando la mayor interacción de usuarios que aún no siguen la cuenta.\n\nLas stories funcionan como espacio de fidelización, generando la mayor interacción entre los seguidores actuales y fortaleciendo la relación con la comunidad.\n\nExiste una oportunidad de mejorar la conversión hacia el perfil, ya que las visitas disminuyeron pese al buen alcance del contenido.\n\nAumentó la intención de contacto, reflejada en el crecimiento de clics al botón de la bio, lo que sugiere que el contenido está comenzando a movilizar consultas.',
-      '',
-    ],
-    nextSteps:[
-      'Aumentar la frecuencia a 3–4 posts semanales para reforzar.\nRepetir formatos que ya demostraron tracción y testear pequeñas variaciones (hook, copy, duración).',
-      'Reforzar el uso de reels como formato principal para seguir ampliando el alcance y la llegada a nuevas audiencias.\nIncorporar llamados a la acción más claros en reels y posts que inviten a visitar el perfil y conocer los servicios.\nCrear contenidos que expliquen el proceso terapéutico, resolviendo dudas frecuentes y facilitando la decisión de consulta.',
-      '',
-    ],
+    insights:   Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
   },
   fb:{
-    esp:      [344594,267173,357351],
-    views:    [955465,719249,734046],
-    seg:      [48,    72,    193],
-    inter:    [415,   534,   1072],
-    repro3s:  [54788, 67501, 27330],
-    clics:    [1893,  1461,  1727],
-    reels:    [328,   335,   466],
-    foto:     [33,    90,    287],
-    story:    [31,    65,    105],
-    // Mejores contenidos
+    esp:      [344594,267173,357351,...Array(9).fill(null)],
+    views:    [955465,719249,734046,...Array(9).fill(null)],
+    seg:      [48,    72,    193,   ...Array(9).fill(null)],
+    inter:    [415,   534,   1072,  ...Array(9).fill(null)],
+    repro3s:  [54788, 67501, 27330, ...Array(9).fill(null)],
+    clics:    [1893,  1461,  1727,  ...Array(9).fill(null)],
+    reels:    [328,   335,   466,   ...Array(9).fill(null)],
+    foto:     [33,    90,    287,   ...Array(9).fill(null)],
+    story:    [31,    65,    105,   ...Array(9).fill(null)],
     cont:[
-      { nombre:['Reel oficios','Reel tienda','Reel proyecto'],
-        link:['https://www.facebook.com','https://www.facebook.com','https://www.facebook.com'],
-        views:[15200,89300,43100], likes:[45,120,88] },
-      { nombre:['Video regreso a clases','Video explicación','Recap estaciones'],
-        link:['https://www.facebook.com','https://www.facebook.com','https://www.facebook.com'],
-        views:[9800,72400,21500], likes:[32,95,61] },
+      { nombre:Array(12).fill(null), link:Array(12).fill(''), views:Array(12).fill(null), likes:Array(12).fill(null) },
+      { nombre:Array(12).fill(null), link:Array(12).fill(''), views:Array(12).fill(null), likes:Array(12).fill(null) },
     ],
-    insights:[
-      'El alcance orgánico de Facebook se mantiene estable gracias a los reels, que concentran la mayor parte de las reproducciones.\n\nLas publicaciones con mayor engagement son aquellas que combinan contenido educativo con llamados a la acción claros.\n\nEl CTR del enlace en bio muestra una audiencia interesada en conocer más sobre los servicios.',
-      'Las visualizaciones totales disminuyeron respecto a enero, pero la tasa de interacción por publicación mejoró.\n\nEl formato foto ganó participación relativa, sugiriendo mayor disposición de la audiencia a leer contenido estático.\n\nLos nuevos seguidores crecieron un 50%, lo que indica que el alcance está llegando a perfiles afines.',
-      'Marzo registró el mejor mes en nuevos seguidores e interacciones totales, con un incremento del 168% vs febrero.\n\nLos reels continúan siendo el formato dominante y su alcance se amplía con cada publicación.\n\nSe observa una audiencia más comprometida con el contenido de servicio y comunidad.',
-    ],
-    nextSteps:[
-      'Mantener la cadencia de reels semanales para sostener el alcance orgánico.\nTestear publicaciones con preguntas o encuestas para aumentar los comentarios y el engagement.',
-      'Incrementar la frecuencia de publicación de fotos para aprovechar el interés detectado en ese formato.\nAgregar llamados a la acción en cada publicación apuntando al enlace del perfil.',
-      'Capitalizar el crecimiento de seguidores con contenido de bienvenida y presentación de los servicios.\nReforzar el uso de reels con subtítulos y hooks en los primeros 3 segundos para maximizar las reproducciones completas.',
-    ],
+    insights:  Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
   },
   tt:{
-    videos:   [6,     null,  null],
-    inter:    [null,  null,  null],
-    seg:      [null,  null,  null],
+    videos: Array(12).fill(null),
+    inter:  Array(12).fill(null),
+    seg:    Array(12).fill(null),
   },
   ads:{
-    inv:      [7118.12,6501.30,10808.61],
-    invCentro:[null,null,null],
-    msgs:     [118,   129,   170],
-    leads:    [0,     2,     30],
+    inv:       Array(12).fill(null),
+    invCentro: Array(12).fill(null),
+    msgs:      Array(12).fill(null),
+    leads:     Array(12).fill(null),
     camps:{
       'TOFU · Tráfico IG': {
-        inv:[1540.41,1398.36,1556.96], alc:[70123,70075,64479],
-        imp:[167800,147000,139600],    cpa:[0.81,0.83,1.27], cpm:[9.18,9.51,11.15], ctr:[1.14,1.14,0.89],
-        anuncio:[{txt:'',url:''},{txt:'',url:''},{txt:'',url:''}],
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
       'TOFU · Alcance': {
-        inv:[3292.84,2713.29,1553.78], alc:[367644,275000,191536],
-        imp:[1045000,729000,376000],   cpa:[8.96,9.87,8.11], cpm:[3.15,3.72,4.13], ctr:[0.28,0.33,0.22],
-        anuncio:[{txt:'',url:''},{txt:'',url:''},{txt:'',url:''}],
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
       'TOFU · Video Views': {
-        inv:[0,70.01,1557.62],         alc:[0,2130,41734],
-        imp:[0,2141,43300],            cpa:[0,0.07,0.05], cpm:[0,32.70,35.97], ctr:[0,1.35,1.42],
-        anuncio:[{txt:'',url:''},{txt:'',url:''},{txt:'',url:''}],
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
       'MOFU · Mensajes': {
-        inv:[1543.53,1549.83,3032.62], alc:[18153,16832,23658],
-        imp:[69300,61200,104800],      cpa:[21.94,15.81,17.84], cpm:[22.27,25.32,28.93], ctr:[2.14,2.05,1.93],
-        anuncio:[{txt:'',url:''},{txt:'',url:''},{txt:'',url:''}],
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
       'MOFU · Lead Forms': {
-        inv:[0,136.12,3026.18],        alc:[0,2004,19155],
-        imp:[0,3351,70330],            cpa:[0,68.06,60.52], cpm:[0,40.63,43.03], ctr:[0,3.22,2.28],
-        anuncio:[{txt:'',url:''},{txt:'',url:''},{txt:'',url:''}],
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
       'BOFU · Retargeting': {
-        inv:[771.34,633.69,0],         alc:[10849,8700,0],
-        imp:[32725,26700,0],           cpa:[15.74,20.44,0], cpm:[23.57,23.74,0], ctr:[2.02,2.12,0],
-        anuncio:[{txt:'',url:''},{txt:'',url:''},{txt:'',url:''}],
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
     },
-    insights:[
-      'La inversión se concentró principalmente en TOFU Alcance y MOFU Mensajes, logrando un alcance total significativo con un CPM competitivo.\n\nEl canal de mensajes mostró un CPA eficiente, lo que indica que la audiencia responde bien a los mensajes directos como vía de conversión.\n\nLas campañas BOFU de retargeting complementaron el embudo con un costo controlado y audiencias ya calificadas.',
-      'La inversión total disminuyó levemente respecto a enero, redistribuyéndose hacia MOFU Mensajes y habilitando por primera vez Video Views.\n\nEl costo por acción en TOFU Alcance se mantiene estable, lo que valida la estrategia de awareness continua.\n\nMOFU Lead Forms comenzó a operar con resultados iniciales prometedores en costo por lead.',
-      'Marzo registró la mayor inversión total, traccionada principalmente por MOFU Mensajes y MOFU Lead Forms, que escalaron significativamente.\n\nLos leads generados crecieron de 2 a 30, validando la efectividad del funnel completo.\n\nTOFU Video Views consolidó su operación con un CPM eficiente y alcance creciente.',
-    ],
-    nextSteps:[
-      'Optimizar la distribución de presupuesto aumentando la participación de MOFU Mensajes que muestra el mejor CPA del funnel.\nIniciar pruebas de Video Views para ampliar el alcance con formato audiovisual.',
-      'Escalar gradualmente el presupuesto de MOFU Lead Forms para incrementar la generación de leads cualificados.\nMantener TOFU Alcance activo para sostener la entrada de nuevas audiencias al embudo.',
-      'Continuar escalando MOFU Lead Forms y MOFU Mensajes dado su rendimiento en conversión.\nEvaluar reactivar BOFU Retargeting con audiencias actualizadas para cerrar el ciclo del embudo.\nMonitorear el CPM de Video Views para asegurar eficiencia al escalar.',
-    ],
+    insights:  Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
   },
-  // ── Convertidos en Centro (celdas amarillas = ingreso manual) ──
+  // ── Convertidos en Centro ──
   centro:{
-    inv:      [null,null,null],
-    pk_cant:  [null,null,null],
-    pk_monto: [null,null,null],
-    ter_cant: [null,null,null],
-    ter_monto:[null,null,null],
-    valor:    [null,null,null],
-    capac:    [null,null,null],
-    total:    [0,0,0],
+    inv:      Array(12).fill(null),
+    pk_cant:  Array(12).fill(null),
+    pk_monto: Array(12).fill(null),
+    ter_cant: Array(12).fill(null),
+    ter_monto:Array(12).fill(null),
+    valor:    Array(12).fill(null),
+    capac:    Array(12).fill(null),
+    total:    Array(12).fill(null),
   },
   // ── Proyecto / Comercializadora ──
   proy:{
-    inv:      [null,null,null],
-    leads:    [null,null,null],
-    presup:   [null,null,null],
-    cierres:  [null,null,null],
-    tasa:     [null,null,null],
+    inv:     Array(12).fill(null),
+    leads:   Array(12).fill(null),
+    presup:  Array(12).fill(null),
+    cierres: Array(12).fill(null),
+    tasa:    Array(12).fill(null),
   }
 };
 D.ads.alcTotal = MO.map((_,i)=>Object.values(D.ads.camps).reduce((s,c)=>s+(c.alc[i]||0),0));
 
 // ── STATE ─────────────────────────────────────────────────────────────────
-let SEL=[0,1,2];   // selected month indices (multi)
+let SEL=[0,1,2];   // se actualiza tras cargar el sheet
 let TAB='resumen';
 const CHS={};
 
@@ -1011,25 +986,27 @@ function txts(row,cols){return cols.map(c=>(row[c]||'').trim());}
 function parseNL(t){const m=t.match(/https?:\/\/\S+/);return{nombre:(t.replace(m?m[0]:'','').replace(/[-–]\s*$/,'').trim()||t),link:m?m[0]:''};}
 
 // Detect which columns (2–13) have actual IG data
-function detectMonths(igRows){
-  const vr=rbl(igRows,'Visualizaciones (views)');
-  const cols=[];
-  for(let c=2;c<=13;c++){
-    const v=parseFloat((vr[c]||'').replace(/,/g,''));
-    if(!isNaN(v)&&v>0)cols.push(c); else if(cols.length)break;
-  }
-  return cols.length?cols:[2,3,4];
-}
+// Siempre devuelve las 12 columnas para extraer datos de todo el año
+function detectMonths(){ return [2,3,4,5,6,7,8,9,10,11,12,13]; }
 
-// Rebuild month selector buttons after detecting new months
-function updateMonthUI(activeCols){
-  const newMO=activeCols.map(c=>MO_FULL[c-2]);
-  if(JSON.stringify(newMO)===JSON.stringify([...MO]))return;
-  MO.length=0; newMO.forEach(m=>MO.push(m));
-  SEL=MO.map((_,i)=>i);
+// Reconstruye los botones de mes mostrando solo los meses con datos reales
+function updateMonthUI(){
+  // Detectar qué índices de MO (0-11) tienen datos en IG views o FB
+  const activeIdx=[];
+  for(let i=0;i<12;i++){
+    const hasIG  = D.ig.views[i]!=null && D.ig.views[i]>0;
+    const hasFB  = D.fb.esp[i]!=null && D.fb.esp[i]>0;
+    const hasAds = D.ads.invCentro[i]!=null && D.ads.invCentro[i]>0;
+    if(hasIG||hasFB||hasAds) activeIdx.push(i);
+  }
+  const active = activeIdx.length>0 ? activeIdx : [0,1,2];
+  SEL=[...active];
   const div=document.querySelector('.months');
   if(div) div.innerHTML='<span>Período:</span>'+
-    MO.map((mo,i)=>`<button class="mbtn sel" data-i="${i}" onclick="toggleMonth(${i})">${mo}</button>`).join('');
+    MO.map((mo,i)=>{
+      if(!active.includes(i))return '';
+      return `<button class="mbtn sel" data-i="${i}" onclick="toggleMonth(${i})">${mo}</button>`;
+    }).join('');
 }
 
 // Extract all 6 ad campaign sections from the ads CSV
@@ -1098,8 +1075,7 @@ async function loadSheetData(){
     const tt=ttT?parseCSV(ttT):null;
     const ads=adsT?parseCSV(adsT):null;
     const res=resT?parseCSV(resT):null;
-    const ac=ig?detectMonths(ig):(fb?detectMonths(fb):null);
-    if(ac){updateMonthUI(ac);}
+    const ac=detectMonths(); // siempre [2..13]
 
     // ── Instagram
     if(ig&&ac){
@@ -1187,6 +1163,7 @@ async function loadSheetData(){
       });
     }
 
+    updateMonthUI(); // reconstruir botones con datos ya cargados
     destroyAll();
     RENDERS[TAB]();
     const now=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
