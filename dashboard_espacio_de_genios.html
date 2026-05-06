@@ -464,12 +464,18 @@ function rResumen(){
     }
   };
 
-  // Campañas de CENTRO únicamente (sin las dos de Proyecto)
+  // Campañas de CENTRO únicamente
   const CAMP_DEFS=[
     {lbl:'TOFU · Tráfico IG', dk:'TOFU · Tráfico IG', col:'#6c3ee8'},
     {lbl:'TOFU · Alcance',    dk:'TOFU · Alcance',    col:'#8b5cf6'},
     {lbl:'MOFU · Mensajes',   dk:'MOFU · Mensajes',   col:'#f59e0b'},
     {lbl:'BOFU · Retargeting',dk:'BOFU · Retargeting',col:'#ef4444'},
+  ];
+
+  // Campañas de PROYECTO únicamente
+  const CAMP_PROY=[
+    {lbl:'TOFU · Video Views', dk:'TOFU · Video Views', col:'#0ea5e9'},
+    {lbl:'MOFU · Lead Forms',  dk:'MOFU · Lead Forms',  col:'#06b6d4'},
   ];
 
   // Total campañas Centro: fila "Inversión Centro ($)" del sheet Meta Ads → D.ads.invCentro
@@ -478,8 +484,15 @@ function rResumen(){
   const adsInvTotal = D.ads.invCentro.some(v=>v!=null&&v!==0) ? D.ads.invCentro : campSum;
   const campKpis=CAMP_DEFS.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
 
+  // Total campañas Proyecto: fila "Inversion Proyecto ($)" → D.ads.invProy
+  // Fallback: suma de las 2 campañas de Proyecto
+  const campProySum = MO.map((_,i) => CAMP_PROY.reduce((s,c) => s+(D.ads.camps[c.dk].inv[i]??0), 0));
+  const adsInvProy = D.ads.invProy.some(v=>v!=null&&v!==0) ? D.ads.invProy : campProySum;
+  const campProyKpis=CAMP_PROY.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
+
   // Altura dinámica del gráfico horizontal
   const hChartH = Math.max(220, SEL.length * 80 + 60);
+  const hChartHP = Math.max(160, SEL.length * 60 + 60);
 
   document.getElementById('p-resumen').innerHTML=`
     <div class="pbadge">📊 ${MO[m]}${pLabel}</div>
@@ -497,7 +510,16 @@ function rResumen(){
       ${campKpis}
     </div>
     <div class="g1" style="margin-top:8px">
-      ${cc('r-camp-inv','Inversión por campaña · Meta Ads','$ por mes seleccionado',hChartH)}
+      ${cc('r-camp-inv','Inversión por campaña · Centro','$ por mes seleccionado',hChartH)}
+    </div>
+
+    ${sec('Inversión Meta Ads · Proyecto — Desglose por campaña')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      ${kpiAuto('Total Campañas · Proyecto', adsInvProy, 'money','ads')}
+      ${campProyKpis}
+    </div>
+    <div class="g1" style="margin-top:8px">
+      ${cc('r-camp-proy-inv','Inversión por campaña · Proyecto','$ por mes seleccionado',hChartHP)}
     </div>
 
     ${sec('🏫 Convertidos en Centro')}
@@ -544,11 +566,36 @@ function rResumen(){
     <div class="g1">${cc('r-imp','Impresiones / Visualizaciones por mes','Views totales IG vs Visualizaciones totales FB',280)}</div>
   `;
 
-  // ── Gráfico de campaña: barras HORIZONTALES (meses en Y, $ en X) ──
+  // ── Gráfico Centro: barras HORIZONTALES (meses en Y, $ en X) ──
   mk('r-camp-inv',{type:'bar',
     data:{
       labels:selLbls(),
       datasets:CAMP_DEFS.map(c=>({
+        label:c.lbl,
+        data:SEL.map(i=>D.ads.camps[c.dk].inv[i]??0),
+        backgroundColor:c.col+'BB',borderColor:c.col,borderWidth:1.5,borderRadius:4,
+      }))
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true,padding:12,font:{size:11}}},
+        tooltip:{callbacks:{label(ctx){return ` ${ctx.dataset.label}: ${f$(ctx.parsed.x)}`;} }}
+      },
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{callback:v=>'$'+fK(v),font:{size:11}}},
+        y:{grid:{display:false},ticks:{font:{size:12}}}
+      }
+    }
+  });
+
+  // ── Gráfico Proyecto: barras HORIZONTALES (meses en Y, $ en X) ──
+  mk('r-camp-proy-inv',{type:'bar',
+    data:{
+      labels:selLbls(),
+      datasets:CAMP_PROY.map(c=>({
         label:c.lbl,
         data:SEL.map(i=>D.ads.camps[c.dk].inv[i]??0),
         backgroundColor:c.col+'BB',borderColor:c.col,borderWidth:1.5,borderRadius:4,
