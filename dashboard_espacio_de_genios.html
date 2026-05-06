@@ -462,19 +462,16 @@ function rResumen(){
     }
   };
 
-  // Campaign definitions
+  // Campañas de CENTRO únicamente (sin las dos de Proyecto)
   const CAMP_DEFS=[
     {lbl:'TOFU · Tráfico IG', dk:'TOFU · Tráfico IG', col:'#6c3ee8'},
     {lbl:'TOFU · Alcance',    dk:'TOFU · Alcance',    col:'#8b5cf6'},
-    {lbl:'TOFU · Video Views',dk:'TOFU · Video Views',col:'#a78bfa'},
     {lbl:'MOFU · Mensajes',   dk:'MOFU · Mensajes',   col:'#f59e0b'},
-    {lbl:'MOFU · Lead Forms', dk:'MOFU · Lead Forms', col:'#f97316'},
     {lbl:'BOFU · Retargeting',dk:'BOFU · Retargeting',col:'#ef4444'},
   ];
 
-  // ── Fuentes correctas ──
-  // Meta Ads total: fila 4 hoja Meta Ads "Inversion total centro" → D.ads.invCentro
-  //   Si esa fila no existe en el sheet, se calcula sumando las 6 campañas
+  // Total: fila "Inversión total Centro ($)" del sheet Meta Ads → D.ads.invCentro
+  // Fallback: suma de las 4 campañas de Centro si esa fila no carga
   const campSum = MO.map((_,i) => CAMP_DEFS.reduce((s,c) => s+(D.ads.camps[c.dk].inv[i]??0), 0));
   const adsInvTotal = D.ads.invCentro.some(v=>v!=null&&v!==0) ? D.ads.invCentro : campSum;
   const campKpis=CAMP_DEFS.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
@@ -993,10 +990,13 @@ function detectMonths(){ return [2,3,4,5,6,7,8,9,10,11,12,13]; }
 function updateMonthUI(){
   const activeIdx=[];
   for(let i=0;i<12;i++){
-    const hasIG  = D.ig.views[i]!=null && D.ig.views[i]>0;
-    const hasFB  = D.fb.esp[i]!=null && D.fb.esp[i]>0;
-    const hasAds = D.ads.invCentro[i]!=null && D.ads.invCentro[i]>0;
-    if(hasIG||hasFB||hasAds) activeIdx.push(i);
+    const hasIG    = D.ig.views[i]!=null && D.ig.views[i]>0;
+    const hasFB    = D.fb.esp[i]!=null && D.fb.esp[i]>0;
+    const hasAds   = D.ads.invCentro[i]!=null && D.ads.invCentro[i]>0;
+    const hasCamp  = Object.values(D.ads.camps).some(c=>c.inv[i]!=null && c.inv[i]>0);
+    const hasCentro= D.centro.total[i]!=null && D.centro.total[i]>0;
+    const hasProy  = D.proy.inv[i]!=null && D.proy.inv[i]>0;
+    if(hasIG||hasFB||hasAds||hasCamp||hasCentro||hasProy) activeIdx.push(i);
   }
   const active = activeIdx.length>0 ? activeIdx : [0,1,2];
   SEL=[...active];
