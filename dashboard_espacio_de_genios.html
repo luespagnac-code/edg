@@ -989,9 +989,8 @@ function parseNL(t){const m=t.match(/https?:\/\/\S+/);return{nombre:(t.replace(m
 // Siempre devuelve las 12 columnas para extraer datos de todo el año
 function detectMonths(){ return [2,3,4,5,6,7,8,9,10,11,12,13]; }
 
-// Reconstruye los botones de mes mostrando solo los meses con datos reales
+// Reconstruye los botones de mes — muestra los 12 siempre, activa los que tienen datos
 function updateMonthUI(){
-  // Detectar qué índices de MO (0-11) tienen datos en IG views o FB
   const activeIdx=[];
   for(let i=0;i<12;i++){
     const hasIG  = D.ig.views[i]!=null && D.ig.views[i]>0;
@@ -1004,8 +1003,10 @@ function updateMonthUI(){
   const div=document.querySelector('.months');
   if(div) div.innerHTML='<span>Período:</span>'+
     MO.map((mo,i)=>{
-      if(!active.includes(i))return '';
-      return `<button class="mbtn sel" data-i="${i}" onclick="toggleMonth(${i})">${mo}</button>`;
+      const hasData=active.includes(i);
+      const selCls=hasData?'sel':'';
+      const disStyle=hasData?'':'opacity:.35;cursor:default;pointer-events:none';
+      return `<button class="mbtn ${selCls}" data-i="${i}" onclick="toggleMonth(${i})" style="${disStyle}">${mo}</button>`;
     }).join('');
 }
 
