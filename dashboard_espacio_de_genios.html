@@ -70,6 +70,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .sec{margin:28px 0 14px;display:flex;align-items:center;gap:10px}
 .sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);white-space:nowrap}
 .sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.r-divider{margin:32px 0;border:none;border-top:2px solid var(--border);border-radius:2px}
 
 /* GRIDS */
 .g1{display:grid;grid-template-columns:1fr;gap:var(--gap);margin-bottom:var(--gap)}
@@ -504,7 +505,9 @@ function rResumen(){
       ${kpiAuto('Inversión Proyecto', D.ads.invProy, 'money','ads')}
     </div>
 
-    ${sec('Inversión Meta Ads · Centro — Desglose por campaña')}
+    <hr class="r-divider">
+
+    ${sec('🏫 Centro · Inversión Meta Ads')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
       ${kpiAuto('Total Campañas · Centro', adsInvTotal, 'money','acc')}
       ${campKpis}
@@ -513,16 +516,7 @@ function rResumen(){
       ${cc('r-camp-inv','Inversión por campaña · Centro','$ por mes seleccionado',hChartH)}
     </div>
 
-    ${sec('Inversión Meta Ads · Proyecto — Desglose por campaña')}
-    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-      ${kpiAuto('Total Campañas · Proyecto', adsInvProy, 'money','ads')}
-      ${campProyKpis}
-    </div>
-    <div class="g1" style="margin-top:8px">
-      ${cc('r-camp-proy-inv','Inversión por campaña · Proyecto','$ por mes seleccionado',hChartHP)}
-    </div>
-
-    ${sec('🏫 Convertidos en Centro')}
+    ${sec('🏫 Centro · Convertidos')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
       ${kpiAuto('Inversión total · Centro', D.ads.invCentro, 'money','acc')}
       ${kpiAuto('Pre-Kinder',D.centro.pk_monto,'money','acc')}
@@ -535,9 +529,20 @@ function rResumen(){
       ${cc('r-centro-detail','Desglose por servicio','Pre-Kinder, Terapias, Valoraciones y Capacitaciones',240)}
     </div>
 
-    ${sec('🏗️ Proyecto · Comercializadora')}
+    <hr class="r-divider">
+
+    ${sec('🏗️ Proyecto · Inversión Meta Ads')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      ${kpiAuto('Total Campañas · Proyecto', adsInvProy, 'money','ads')}
+      ${campProyKpis}
+    </div>
+    <div class="g1" style="margin-top:8px">
+      ${cc('r-camp-proy-inv','Inversión por campaña · Proyecto','$ por mes seleccionado',hChartHP)}
+    </div>
+
+    ${sec('🏗️ Proyecto · Convertidos')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
-      ${kpiAuto('Inversión total', D.proy.inv, 'money','ads')}
+      ${kpiAuto('Inversión total · Proyecto', D.ads.invProy, 'money','ads')}
       ${kpiAuto('Leads recibidos',D.proy.leads,'k','ads')}
       ${kpiAuto('Presupuestos enviados',D.proy.presup,'k','ads')}
       ${kpiAuto('Cierres',D.proy.cierres,'k','ads')}
@@ -547,6 +552,8 @@ function rResumen(){
       ${cc('r-proy-conv','Leads vs Cierres concretados','Período seleccionado',240)}
       ${cc('r-proy-inv','Inversión del proyecto','Período seleccionado',240)}
     </div>
+
+    <hr class="r-divider">
 
     ${sec('Instagram · Métricas principales')}
     <div class="kpi-grid">
