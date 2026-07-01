@@ -265,6 +265,33 @@ const D = {
         msgs:Array(12).fill(null), leads:Array(12).fill(null),
         anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
       },
+      'Tienda · TOFU': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        visitas:Array(12).fill(null),
+        viewcontent:Array(12).fill(null), addtocart:Array(12).fill(null),
+        compras:Array(12).fill(null), valorCompras:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'Tienda · MOFU': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        visitas:Array(12).fill(null),
+        viewcontent:Array(12).fill(null), addtocart:Array(12).fill(null),
+        compras:Array(12).fill(null), valorCompras:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'Tienda · BOFU': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        visitas:Array(12).fill(null),
+        viewcontent:Array(12).fill(null), addtocart:Array(12).fill(null),
+        compras:Array(12).fill(null), valorCompras:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
     },
     insights:  Array(12).fill(''),
     nextSteps: Array(12).fill(''),
@@ -943,9 +970,16 @@ function rAds(){
     {id:'tofu-ig',  lbl:'TOFU · Tráfico Instagram', dk:'TOFU · Tráfico IG',  col:'#6c3ee8'},
     {id:'tofu-alc', lbl:'TOFU · Alcance',            dk:'TOFU · Alcance',      col:'#8b5cf6'},
     {id:'tofu-vid', lbl:'TOFU · Video Views',         dk:'TOFU · Video Views',  col:'#a78bfa'},
-    {id:'mofu-msg', lbl:'MOFU · Mensajes',            dk:'MOFU · Mensajes',     col:'#f59e0b', extra:{label:'Mensajes recibidos',key:'msgs'}},
+    {id:'mofu-msg', lbl:'MOFU · Mensajes',            dk:'MOFU · Mensajes',     col:'#f59e0b',
+      extras:[{label:'Mensajes recibidos', key:'msgs'}]},
     {id:'mofu-ld',  lbl:'MOFU · Lead Forms',          dk:'MOFU · Lead Forms',   col:'#f97316'},
     {id:'bofu-ret', lbl:'BOFU · Retargeting',         dk:'BOFU · Retargeting',  col:'#ef4444'},
+    {id:'tienda-tofu', lbl:'Tienda · TOFU (Visitas web)',          dk:'Tienda · TOFU', col:'#059669',
+      extras:[{label:'Visitas al sitio web', key:'visitas'}]},
+    {id:'tienda-mofu', lbl:'Tienda · MOFU (ViewContent / Add to Cart)', dk:'Tienda · MOFU', col:'#10b981',
+      extras:[{label:'ViewContent', key:'viewcontent'},{label:'Add to Cart', key:'addtocart'}]},
+    {id:'tienda-bofu', lbl:'Tienda · BOFU (Compras)',              dk:'Tienda · BOFU', col:'#34d399',
+      extras:[{label:'Compras', key:'compras'},{label:'Valor de compras ($)', key:'valorCompras', fmt:v=>'$'+fK(v)}]},
   ];
 
   const campSections=CAMPS.map(c=>{
@@ -965,7 +999,7 @@ function rAds(){
       ${cc('ads-'+c.id+'-cpa','CPA','Costo por acción ($)',190)}
       ${cc('ads-'+c.id+'-ctr','CTR','Click-through rate (%)',190)}
     </div>
-    ${c.extra?`<div class="g1" style="margin-top:4px">${cc('ads-'+c.id+'-extra',c.extra.label,'Meses seleccionados',200)}</div>`:''}
+    ${(c.extras||[]).map((e,ei)=>`<div class="g1" style="margin-top:4px">${cc('ads-'+c.id+'-extra'+ei,e.label,'Meses seleccionados',200)}</div>`).join('')}
     <div class="cc" style="margin-top:4px">
       <div class="cc-title">🏆 Anuncio ganador · ${MO[m]}</div>
       <div class="cc-sub">El anuncio con mejor performance del mes</div>
@@ -1003,7 +1037,9 @@ function rAds(){
     gBar('ads-'+c.id+'-cpm',[{label:'CPM ($)',        data:d.cpm, color:c.col}], v=>'$'+fN(v,2));
     gBar('ads-'+c.id+'-cpa',[{label:'CPA ($)',        data:d.cpa, color:c.col}], v=>'$'+fN(v,2));
     gBar('ads-'+c.id+'-ctr',[{label:'CTR (%)',        data:d.ctr, color:c.col}], v=>fN(v,2)+'%');
-    if(c.extra) gBar('ads-'+c.id+'-extra',[{label:c.extra.label, data:d[c.extra.key], color:c.col}]);
+    (c.extras||[]).forEach((e,ei)=>{
+      gBar('ads-'+c.id+'-extra'+ei,[{label:e.label, data:d[e.key], color:c.col}], e.fmt||null);
+    });
   });
 }
 
@@ -1079,20 +1115,25 @@ function updateMonthUI(){
     }).join('');
 }
 
-// Extract all 6 ad campaign sections from the ads CSV
+// Extract all ad campaign sections from the ads CSV
 function extractAdsCamps(rows,cols){
   const HDRS=[
-    ['TRÁFICO A INSTAGRAM','TOFU · Tráfico IG'],
-    ['TOFU — ALCANCE',     'TOFU · Alcance'],
-    ['VIDEO VIEWS',        'TOFU · Video Views'],
-    ['MOFU — MENSAJES',    'MOFU · Mensajes'],
-    ['LEAD FORMS',         'MOFU · Lead Forms'],
-    ['RETARGETING',        'BOFU · Retargeting'],
+    {frags:['TRÁFICO A INSTAGRAM'],   key:'TOFU · Tráfico IG'},
+    {frags:['TOFU — ALCANCE'],        key:'TOFU · Alcance'},
+    {frags:['VIDEO VIEWS'],           key:'TOFU · Video Views'},
+    {frags:['MOFU — MENSAJES'],       key:'MOFU · Mensajes'},
+    {frags:['LEAD FORMS'],            key:'MOFU · Lead Forms'},
+    {frags:['RETARGETING'],           key:'BOFU · Retargeting'},
+    {frags:['TIENDA','TOFU'],         key:'Tienda · TOFU'},
+    {frags:['TIENDA','MOFU'],         key:'Tienda · MOFU'},
+    {frags:['TIENDA','BOFU'],         key:'Tienda · BOFU'},
   ];
   const starts=[];
   rows.forEach((row,idx)=>{
     const lbl=(row[1]||'').replace(/^\s+/,'').toUpperCase();
-    for(const [frag,key] of HDRS){if(lbl.includes(frag)){starts.push({idx,key});break;}}
+    for(const {frags,key} of HDRS){
+      if(frags.every(f=>lbl.includes(f))){starts.push({idx,key});break;}
+    }
   });
   const result={};
   starts.forEach(({idx,key},si)=>{
@@ -1109,6 +1150,11 @@ function extractAdsCamps(rows,cols){
       ctr:nums(sR('CTR (%)'),cols),
       msgs:nums(sR('Mensajes recibidos'),cols),
       leads:nums(sR('Leads generados'),cols),
+      visitas:     nums(sR('Visitas al sitio web'),cols),
+      viewcontent: nums(sR('ViewContent'),cols),
+      addtocart:   nums(sR('Add to Cart'),cols),
+      compras:     nums(sR('Compras'),cols),
+      valorCompras:nums(sR('Valor de compras ($)'),cols),
       anuncio:cols.map(c=>{const t=(an[c]||'').trim();const m=t.match(/https?:\/\/\S+/);return{txt:t.replace(m?m[0]:'','').replace(/[-–]?\s*$/,'').trim(),url:m?m[0]:''};}),
     };
   });
