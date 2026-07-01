@@ -10,7 +10,7 @@
   --bg:#f0f2f7;--card:#fff;--hdr:#1a1036;--text:#1e1e2e;--muted:#6b7280;
   --border:#e5e7eb;--pos:#10b981;--neg:#ef4444;--gap:16px;--r:12px;
   --shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
-  --ig:#E1306C;--fb:#1877F2;--tt:#333;--ads:#00C49A;--acc:#6c3ee8;
+  --ig:#E1306C;--fb:#1877F2;--tt:#333;--ads:#00C49A;--acc:#6c3ee8;--gads:#4285F4;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
@@ -35,6 +35,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab.active[data-t=facebook]{color:var(--fb);border-bottom-color:var(--fb)}
 .tab.active[data-t=tiktok]{color:var(--tt);border-bottom-color:var(--tt)}
 .tab.active[data-t=ads]{color:var(--ads);border-bottom-color:var(--ads)}
+.tab.active[data-t=gads]{color:var(--gads);border-bottom-color:var(--gads)}
+.kpi.gads{border-top-color:var(--gads)}
+.pbadge.gads{background:rgba(66,133,244,.1);color:var(--gads);border-color:rgba(66,133,244,.2)}
 
 /* MONTH MULTI-PICKER */
 .months{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -150,6 +153,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <button class="tab"        data-t="facebook"  onclick="setTab('facebook')">📘 Facebook</button>
     <button class="tab"        data-t="tiktok"    onclick="setTab('tiktok')">🎵 TikTok</button>
     <button class="tab"        data-t="ads"       onclick="setTab('ads')">📣 Meta Ads</button>
+    <button class="tab"        data-t="gads"      onclick="setTab('gads')">🔍 Google Ads</button>
   </nav>
   <div class="months">
     <span>Período:</span>
@@ -165,6 +169,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div id="p-facebook"  class="panel"></div>
   <div id="p-tiktok"    class="panel"></div>
   <div id="p-ads"       class="panel"></div>
+  <div id="p-gads"      class="panel"></div>
 </main>
 
 <script>
@@ -314,6 +319,21 @@ const D = {
     presup:  Array(12).fill(null),
     cierres: Array(12).fill(null),
     tasa:    Array(12).fill(null),
+  },
+  // ── Google Ads ──
+  gads:{
+    invTotal:  Array(12).fill(null),
+    invSearch: Array(12).fill(null),
+    invShop:   Array(12).fill(null),
+    invProy:   Array(12).fill(null),
+    camps:{
+      'Search · Padres General':    {inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+      'Search · Padres Diagnóstico':{inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+      'Search · Docentes':          {inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+      'Shopping':                   {inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+    },
+    insights:  Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
   }
 };
 D.ads.alcTotal = MO.map((_,i)=>Object.values(D.ads.camps).reduce((s,c)=>s+(c.alc[i]||0),0));
@@ -1046,7 +1066,7 @@ function rAds(){
 // ── GOOGLE SHEETS AUTO-FETCH ──────────────────────────────────────────────
 const SHEET_KEY = '2PACX-1vQx8cxYkcF2DwQEGXImNCQgu2kI2A3wdu0NyhRR8pXjuPKXGmztwXhp6slmMoxsoA';
 const csvUrl = gid=>`https://docs.google.com/spreadsheets/d/e/${SHEET_KEY}/pub?output=csv&gid=${gid}`;
-const GIDS   = {ig:'910282513',fb:'706536454',tt:'1935357886',ads:'809679087',res:'1015862116'};
+const GIDS   = {ig:'910282513',fb:'706536454',tt:'1935357886',ads:'809679087',res:'1015862116',gads:'429963772'};
 const MO_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
                  'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -1161,6 +1181,118 @@ function extractAdsCamps(rows,cols){
   return result;
 }
 
+// Extract Google Ads campaign sections
+function extractGadsCamps(rows,cols){
+  const HDRS=[
+    {frags:['SEARCH TIENDA','GENERAL'],    key:'Search · Padres General'},
+    {frags:['SEARCH TIENDA','DIAGNÓSTICO'],key:'Search · Padres Diagnóstico'},
+    {frags:['SEARCH TIENDA','DOCENTES'],   key:'Search · Docentes'},
+    {frags:['SHOPPING'],                   key:'Shopping'},
+  ];
+  const starts=[];
+  rows.forEach((row,idx)=>{
+    const lbl=(row[1]||'').replace(/^\s+/,'').toUpperCase();
+    for(const {frags,key} of HDRS){
+      if(frags.every(f=>lbl.includes(f))){starts.push({idx,key});break;}
+    }
+  });
+  const result={};
+  starts.forEach(({idx,key},si)=>{
+    const end=si+1<starts.length?starts[si+1].idx:rows.length;
+    const sec=rows.slice(idx+1,end).filter(r=>(r[1]||'').trim());
+    const sR=lbl=>sec.find(r=>(r[1]||'').trim().toLowerCase()===lbl.toLowerCase())||[];
+    result[key]={
+      inv :nums(sR('Inversión'),cols),
+      imp :nums(sR('Impresiones'),cols),
+      clics:nums(sR('Clics'),cols),
+      ctr :nums(sR('CTR'),cols),
+      cpc :nums(sR('CPC'),cols),
+      conv:nums(sR('Conversiones'),cols),
+      cpa :nums(sR('CPA'),cols),
+      cvr :nums(sR('CVR'),cols),
+    };
+  });
+  return result;
+}
+
+// ── TAB: GOOGLE ADS ───────────────────────────────────────────────────────
+function rGads(){
+  const p=prevM(), m=lastM();
+  const G='#4285F4';
+
+  const CAMPS_G=[
+    {id:'g-pgen',  lbl:'Search · Padres — General',      dk:'Search · Padres General',    col:'#4285F4'},
+    {id:'g-pdiag', lbl:'Search · Padres — Diagnóstico',  dk:'Search · Padres Diagnóstico',col:'#34A853'},
+    {id:'g-doc',   lbl:'Search · Docentes e Instituciones',dk:'Search · Docentes',         col:'#FBBC05'},
+    {id:'g-shop',  lbl:'Shopping',                        dk:'Shopping',                   col:'#EA4335'},
+  ];
+
+  const campSections=CAMPS_G.map(c=>{
+    const d=D.gads.camps[c.dk];
+    return `
+    ${sec(c.lbl)}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      ${kpi('Inversión ($)',d.inv,'money','gads')}
+      ${kpi('Impresiones',d.imp,'k','gads')}
+      ${kpi('Clics',d.clics,'k','gads')}
+      ${kpi('CTR (%)',d.ctr,'pct','gads')}
+      ${kpi('CPC ($)',d.cpc,'money','gads')}
+      ${kpi('Conversiones',d.conv,'k','gads')}
+      ${kpi('CPA ($)',d.cpa,'money','gads')}
+      ${kpi('CVR (%)',d.cvr,'pct','gads')}
+    </div>
+    <div class="g3">
+      ${cc('g-'+c.id+'-inv','Inversión ($)','Meses seleccionados',200)}
+      ${cc('g-'+c.id+'-clics','Clics','Meses seleccionados',200)}
+      ${cc('g-'+c.id+'-conv','Conversiones','Meses seleccionados',200)}
+    </div>
+    <div class="g3">
+      ${cc('g-'+c.id+'-ctr','CTR (%)','Click-through rate',190)}
+      ${cc('g-'+c.id+'-cpc','CPC ($)','Costo por clic',190)}
+      ${cc('g-'+c.id+'-cpa','CPA ($)','Costo por conversión',190)}
+    </div>`;
+  }).join('');
+
+  const insightTxt=D.gads.insights[m]  || 'Sin datos para este mes.';
+  const nextTxt   =D.gads.nextSteps[m] || 'Sin datos para este mes.';
+
+  document.getElementById('p-gads').innerHTML=`
+    <div class="pbadge gads">🔍 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+
+    ${sec('💰 Inversión Total Google Ads')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+      ${kpi('Inversión Total ($)',D.gads.invTotal,'money','gads')}
+      ${kpi('Search Tienda ($)',D.gads.invSearch,'money','gads')}
+      ${kpi('Shopping ($)',D.gads.invShop,'money','gads')}
+      ${kpi('Search Proyecto ($)',D.gads.invProy,'money','gads')}
+    </div>
+
+    ${campSections}
+
+    ${sec('Insights · '+MO[m])}
+    <div class="g2">
+      <div class="insight-block">
+        <div class="block-label">💡 Insight</div>
+        <div class="block-text">${insightTxt}</div>
+      </div>
+      <div class="nextsteps-block">
+        <div class="block-label">🎯 Next Steps</div>
+        <div class="block-text">${nextTxt}</div>
+      </div>
+    </div>`;
+
+  // Render charts per campaign
+  CAMPS_G.forEach(c=>{
+    const d=D.gads.camps[c.dk];
+    gBar('g-'+c.id+'-inv',  [{label:'Inversión ($)',  data:d.inv,  color:c.col}], v=>'$'+fK(v));
+    gBar('g-'+c.id+'-clics',[{label:'Clics',          data:d.clics,color:c.col}]);
+    gBar('g-'+c.id+'-conv', [{label:'Conversiones',   data:d.conv, color:c.col}]);
+    gBar('g-'+c.id+'-ctr',  [{label:'CTR (%)',         data:d.ctr,  color:c.col}], v=>fN(v,2)+'%');
+    gBar('g-'+c.id+'-cpc',  [{label:'CPC ($)',         data:d.cpc,  color:c.col}], v=>'$'+fN(v,2));
+    gBar('g-'+c.id+'-cpa',  [{label:'CPA ($)',         data:d.cpa,  color:c.col}], v=>'$'+fN(v,2));
+  });
+}
+
 // Main fetch-and-update function
 async function loadSheetData(){
   const el=document.getElementById('last-upd');
@@ -1177,20 +1309,21 @@ async function loadSheetData(){
 
   try{
     const results=await Promise.allSettled(
-      [GIDS.ig,GIDS.fb,GIDS.tt,GIDS.ads,GIDS.res].map(id=>
+      [GIDS.ig,GIDS.fb,GIDS.tt,GIDS.ads,GIDS.res,GIDS.gads].map(id=>
         fetch(csvUrl(id)).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();})
       )
     );
     const ok=results.map(r=>r.status==='fulfilled');
-    const [igT,fbT,ttT,adsT,resT]=results.map(r=>r.status==='fulfilled'?r.value:null);
+    const [igT,fbT,ttT,adsT,resT,gadsT]=results.map(r=>r.status==='fulfilled'?r.value:null);
     const failCount=ok.filter(v=>!v).length;
-    if(failCount===5){throw new Error('Todos los sheets fallaron');}
+    if(failCount===6){throw new Error('Todos los sheets fallaron');}
 
     const ig=igT?parseCSV(igT):null;
     const fb=fbT?parseCSV(fbT):null;
     const tt=ttT?parseCSV(ttT):null;
     const ads=adsT?parseCSV(adsT):null;
     const res=resT?parseCSV(resT):null;
+    const gads=gadsT?parseCSV(gadsT):null;
     const ac=detectMonths(); // siempre [2..13]
 
     // ── Instagram
@@ -1261,6 +1394,17 @@ async function loadSheetData(){
       D.ads.nextSteps=ac.map(c=>(rblLast(ads,'NEXT STEPS')[c]||'').trim());
     }
 
+    // ── Google Ads
+    if(gads&&ac){
+      D.gads.invTotal =nums(rbl(gads,'Inversión total ($)'),ac);
+      D.gads.invSearch=nums(rbl(gads,'Inversion Search Tienda ($)'),ac);
+      D.gads.invShop  =nums(rbl(gads,'Inversion Shopping ($)'),ac);
+      D.gads.invProy  =nums(rbl(gads,'Inversion Search Proyecto ($)'),ac);
+      Object.assign(D.gads.camps, extractGadsCamps(gads,ac));
+      D.gads.insights =ac.map(c=>(rblLast(gads,'INSIGHT')[c]||'').trim());
+      D.gads.nextSteps=ac.map(c=>(rblLast(gads,'NEXT STEPS')[c]||'').trim());
+    }
+
     // ── Centro y Proyecto
     if(res&&ac){
       D.centro.inv      =nums(rbl(res,'Inversion total ($)'),ac);
@@ -1296,7 +1440,7 @@ async function loadSheetData(){
 }
 
 // ── ROUTING ───────────────────────────────────────────────────────────────
-const RENDERS={resumen:rResumen,instagram:rInstagram,facebook:rFacebook,tiktok:rTikTok,ads:rAds};
+const RENDERS={resumen:rResumen,instagram:rInstagram,facebook:rFacebook,tiktok:rTikTok,ads:rAds,gads:rGads};
 
 function doRefresh(){
   loadSheetData();
