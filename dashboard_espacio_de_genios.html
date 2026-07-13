@@ -225,6 +225,10 @@ const D = {
     videos: Array(12).fill(null),
     inter:  Array(12).fill(null),
     seg:    Array(12).fill(null),
+    cont:[
+      {link:Array(12).fill(''), rep:Array(12).fill(null), likes:Array(12).fill(null), guard:Array(12).fill(null)},
+      {link:Array(12).fill(''), rep:Array(12).fill(null), likes:Array(12).fill(null), guard:Array(12).fill(null)},
+    ],
   },
   ads:{
     inv:       Array(12).fill(null),
@@ -954,28 +958,65 @@ function rFacebook(){
 
 // ── TAB: TIKTOK ───────────────────────────────────────────────────────────
 function rTikTok(){
+  const p=prevM(), m=lastM();
+
+  // Tabla de contenidos ganadores
+  const contRows=D.tt.cont.flatMap((c,ci)=>
+    MO.map((mes,mi)=>{
+      const hasData=c.rep[mi]!=null||c.likes[mi]!=null;
+      if(!hasData) return '';
+      const linkHtml=c.link[mi]
+        ? `<a class="cont-link" href="${c.link[mi]}" target="_blank">Ver video</a>`
+        : `<span style="color:var(--muted)">—</span>`;
+      return `<tr>
+        <td style="text-align:center"><span class="badge-num">${ci+1}</span></td>
+        <td>${mes}</td>
+        <td>${linkHtml}</td>
+        <td>${fK(c.rep[mi])}</td>
+        <td>${c.likes[mi]??'—'}</td>
+        <td>${c.guard[mi]??'—'}</td>
+      </tr>`;
+    })
+  ).filter(Boolean).join('');
+
   document.getElementById('p-tiktok').innerHTML=`
-    <div class="pbadge tt">🎵 TikTok · Datos en proceso de carga</div>
-    <div class="tt-notice">
-      <div style="font-size:24px">📋</div>
-      <div><strong>Canal en crecimiento</strong><br><span style="color:var(--muted)">Los datos de TikTok se están comenzando a registrar. Solo Enero 2025 tiene datos disponibles.</span></div>
-    </div>
-    <div class="kpi-grid" style="max-width:520px">
+    <div class="pbadge tt">🎵 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+
+    ${sec('Métricas principales')}
+    <div class="kpi-grid" style="max-width:600px">
       ${kpi('Videos publicados',D.tt.videos,'k','tt')}
       ${kpi('Interacciones',D.tt.inter,'k','tt')}
       ${kpi('Seguidores',D.tt.seg,'k','tt')}
     </div>
+
+    ${sec('Evolución mensual')}
+    <div class="g2">
+      ${cc('tt-inter','Interacciones por mes','Meses seleccionados',220)}
+      ${cc('tt-seg','Seguidores por mes','Meses seleccionados',220)}
+    </div>
+
     ${sec('Videos publicados')}
-    <div style="max-width:460px">${cc('tt-vid','Videos publicados por mes','Enero es el único mes con datos',200)}</div>
-    <div class="coming-soon">
-      <div style="font-size:28px;margin-bottom:10px">📊</div>
-      <strong>Próximas métricas a registrar</strong>
-      <p style="margin-top:6px;color:var(--muted)">Reproducciones · Likes · Guardados · Compartidos · CTR · Seguidores mensuales</p>
+    <div class="g1" style="max-width:560px">
+      ${cc('tt-vid','Videos publicados por mes','Todos los meses',200)}
+    </div>
+
+    ${sec('Contenidos ganadores')}
+    <div class="cc">
+      <div class="cc-title">Top 2 videos por mes</div>
+      <div class="cc-sub">Reproducciones, likes y guardados de los videos destacados</div>
+      <div class="rtable-wrap">
+        <table class="rtable">
+          <thead><tr><th>#</th><th>Mes</th><th>Link</th><th>Reproducciones</th><th>Likes</th><th>Guardados</th></tr></thead>
+          <tbody>${contRows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin datos cargados aún</td></tr>'}</tbody>
+        </table>
+      </div>
     </div>`;
 
+  gBar('tt-inter',[{label:'Interacciones', data:D.tt.inter, color:'#333'}]);
+  gBar('tt-seg',  [{label:'Seguidores',    data:D.tt.seg,   color:'#555'}]);
   mk('tt-vid',{type:'bar',data:{labels:MO,datasets:[{label:'Videos',
     data:D.tt.videos.map(v=>v||0),
-    backgroundColor:MO.map((_,i)=>i===0?'#333':'rgba(51,51,51,.15)'),
+    backgroundColor:MO.map((_,i)=>SEL.includes(i)?'#333':'rgba(51,51,51,.15)'),
     borderColor:'#333',borderWidth:1.5,borderRadius:6}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{stepSize:1}}}}});
@@ -1380,7 +1421,21 @@ async function loadSheetData(){
     }
 
     // ── TikTok
-    if(tt&&ac) D.tt.videos=nums(rbl(tt,'Videos publicados'),ac);
+    if(tt&&ac){
+      D.tt.videos=nums(rbl(tt,'Videos publicados'),ac);
+      D.tt.inter =nums(rbl(tt,'Interacciones'),ac);
+      D.tt.seg   =nums(rbl(tt,'Seguidores'),ac);
+      D.tt.cont=[
+        {link:txts(rbl(tt,'Nombre video #1'),ac),
+         rep: nums(rbl(tt,'Reproducciones video #1'),ac),
+         likes:nums(rbl(tt,'Likes video #1'),ac),
+         guard:nums(rbl(tt,'Guardados video #1'),ac)},
+        {link:txts(rbl(tt,'Nombre video #2'),ac),
+         rep: nums(rbl(tt,'Reproducciones video #2'),ac),
+         likes:nums(rbl(tt,'Likes video #2'),ac),
+         guard:nums(rbl(tt,'Guardados video #2'),ac)},
+      ];
+    }
 
     // ── Meta Ads
     if(ads&&ac){
