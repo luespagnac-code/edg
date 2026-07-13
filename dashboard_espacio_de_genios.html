@@ -10,7 +10,7 @@
   --bg:#f0f2f7;--card:#fff;--hdr:#1a1036;--text:#1e1e2e;--muted:#6b7280;
   --border:#e5e7eb;--pos:#10b981;--neg:#ef4444;--gap:16px;--r:12px;
   --shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
-  --ig:#E1306C;--fb:#1877F2;--tt:#333;--ads:#00C49A;--acc:#6c3ee8;--gads:#4285F4;
+  --ig:#E1306C;--fb:#1877F2;--ads:#00C49A;--acc:#6c3ee8;--gads:#4285F4;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
@@ -33,7 +33,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab.active{color:var(--acc);border-bottom-color:var(--acc)}
 .tab.active[data-t=instagram]{color:var(--ig);border-bottom-color:var(--ig)}
 .tab.active[data-t=facebook]{color:var(--fb);border-bottom-color:var(--fb)}
-.tab.active[data-t=tiktok]{color:var(--tt);border-bottom-color:var(--tt)}
 .tab.active[data-t=ads]{color:var(--ads);border-bottom-color:var(--ads)}
 .tab.active[data-t=gads]{color:var(--gads);border-bottom-color:var(--gads)}
 .kpi.gads{border-top-color:var(--gads)}
@@ -55,7 +54,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .pbadge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px;background:rgba(108,62,232,.1);color:var(--acc);border:1px solid rgba(108,62,232,.2)}
 .pbadge.ig{background:rgba(225,48,108,.1);color:var(--ig);border-color:rgba(225,48,108,.2)}
 .pbadge.fb{background:rgba(24,119,242,.1);color:var(--fb);border-color:rgba(24,119,242,.2)}
-.pbadge.tt{background:rgba(51,51,51,.08);color:#333;border-color:rgba(51,51,51,.15)}
 .pbadge.ads{background:rgba(0,196,154,.1);color:var(--ads);border-color:rgba(0,196,154,.2)}
 
 /* KPI GRID */
@@ -88,8 +86,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* NO PREV */
 .no-prev{display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);font-weight:500;gap:8px;height:100%}
 
-/* TikTok */
-.tt-notice{background:#fff;border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;border-left:4px solid var(--tt)}
 .coming-soon{text-align:center;padding:40px;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);color:var(--muted);margin-top:16px}
 
 /* RESUMEN TABLE */
@@ -151,7 +147,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <button class="tab active" data-t="resumen"   onclick="setTab('resumen')">📊 Resumen</button>
     <button class="tab"        data-t="instagram" onclick="setTab('instagram')">📷 Instagram</button>
     <button class="tab"        data-t="facebook"  onclick="setTab('facebook')">📘 Facebook</button>
-    <button class="tab"        data-t="tiktok"    onclick="setTab('tiktok')">🎵 TikTok</button>
     <button class="tab"        data-t="ads"       onclick="setTab('ads')">📣 Meta Ads</button>
     <button class="tab"        data-t="gads"      onclick="setTab('gads')">🔍 Google Ads</button>
   </nav>
@@ -167,7 +162,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div id="p-resumen"   class="panel active"></div>
   <div id="p-instagram" class="panel"></div>
   <div id="p-facebook"  class="panel"></div>
-  <div id="p-tiktok"    class="panel"></div>
   <div id="p-ads"       class="panel"></div>
   <div id="p-gads"      class="panel"></div>
 </main>
@@ -220,15 +214,6 @@ const D = {
     ],
     insights:  Array(12).fill(''),
     nextSteps: Array(12).fill(''),
-  },
-  tt:{
-    videos: Array(12).fill(null),
-    inter:  Array(12).fill(null),
-    seg:    Array(12).fill(null),
-    cont:[
-      {link:Array(12).fill(''), rep:Array(12).fill(null), likes:Array(12).fill(null), guard:Array(12).fill(null)},
-      {link:Array(12).fill(''), rep:Array(12).fill(null), likes:Array(12).fill(null), guard:Array(12).fill(null)},
-    ],
   },
   ads:{
     inv:       Array(12).fill(null),
@@ -956,71 +941,6 @@ function rFacebook(){
   ],C.fb);
 }
 
-// ── TAB: TIKTOK ───────────────────────────────────────────────────────────
-function rTikTok(){
-  const p=prevM(), m=lastM();
-
-  // Tabla de contenidos ganadores
-  const contRows=D.tt.cont.flatMap((c,ci)=>
-    MO.map((mes,mi)=>{
-      const hasData=c.rep[mi]!=null||c.likes[mi]!=null;
-      if(!hasData) return '';
-      const linkHtml=c.link[mi]
-        ? `<a class="cont-link" href="${c.link[mi]}" target="_blank">Ver video</a>`
-        : `<span style="color:var(--muted)">—</span>`;
-      return `<tr>
-        <td style="text-align:center"><span class="badge-num">${ci+1}</span></td>
-        <td>${mes}</td>
-        <td>${linkHtml}</td>
-        <td>${fK(c.rep[mi])}</td>
-        <td>${c.likes[mi]??'—'}</td>
-        <td>${c.guard[mi]??'—'}</td>
-      </tr>`;
-    })
-  ).filter(Boolean).join('');
-
-  document.getElementById('p-tiktok').innerHTML=`
-    <div class="pbadge tt">🎵 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
-
-    ${sec('Métricas principales')}
-    <div class="kpi-grid" style="max-width:600px">
-      ${kpi('Videos publicados',D.tt.videos,'k','tt')}
-      ${kpi('Interacciones',D.tt.inter,'k','tt')}
-      ${kpi('Seguidores',D.tt.seg,'k','tt')}
-    </div>
-
-    ${sec('Evolución mensual')}
-    <div class="g2">
-      ${cc('tt-inter','Interacciones por mes','Meses seleccionados',220)}
-      ${cc('tt-seg','Seguidores por mes','Meses seleccionados',220)}
-    </div>
-
-    ${sec('Videos publicados')}
-    <div class="g1" style="max-width:560px">
-      ${cc('tt-vid','Videos publicados por mes','Todos los meses',200)}
-    </div>
-
-    ${sec('Contenidos ganadores')}
-    <div class="cc">
-      <div class="cc-title">Top 2 videos por mes</div>
-      <div class="cc-sub">Reproducciones, likes y guardados de los videos destacados</div>
-      <div class="rtable-wrap">
-        <table class="rtable">
-          <thead><tr><th>#</th><th>Mes</th><th>Link</th><th>Reproducciones</th><th>Likes</th><th>Guardados</th></tr></thead>
-          <tbody>${contRows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin datos cargados aún</td></tr>'}</tbody>
-        </table>
-      </div>
-    </div>`;
-
-  gBar('tt-inter',[{label:'Interacciones', data:D.tt.inter, color:'#333'}]);
-  gBar('tt-seg',  [{label:'Seguidores',    data:D.tt.seg,   color:'#555'}]);
-  mk('tt-vid',{type:'bar',data:{labels:MO,datasets:[{label:'Videos',
-    data:D.tt.videos.map(v=>v||0),
-    backgroundColor:MO.map((_,i)=>SEL.includes(i)?'#333':'rgba(51,51,51,.15)'),
-    borderColor:'#333',borderWidth:1.5,borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{stepSize:1}}}}});
-}
 
 // ── TAB: META ADS ─────────────────────────────────────────────────────────
 function rAds(){
@@ -1107,7 +1027,7 @@ function rAds(){
 // ── GOOGLE SHEETS AUTO-FETCH ──────────────────────────────────────────────
 const SHEET_KEY = '2PACX-1vQx8cxYkcF2DwQEGXImNCQgu2kI2A3wdu0NyhRR8pXjuPKXGmztwXhp6slmMoxsoA';
 const csvUrl = gid=>`https://docs.google.com/spreadsheets/d/e/${SHEET_KEY}/pub?output=csv&gid=${gid}`;
-const GIDS   = {ig:'910282513',fb:'706536454',tt:'1935357886',ads:'809679087',res:'1015862116',gads:'429963772'};
+const GIDS   = {ig:'910282513',fb:'706536454',ads:'809679087',res:'1015862116',gads:'429963772'};
 const MO_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
                  'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -1350,18 +1270,17 @@ async function loadSheetData(){
 
   try{
     const results=await Promise.allSettled(
-      [GIDS.ig,GIDS.fb,GIDS.tt,GIDS.ads,GIDS.res,GIDS.gads].map(id=>
+      [GIDS.ig,GIDS.fb,GIDS.ads,GIDS.res,GIDS.gads].map(id=>
         fetch(csvUrl(id)).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();})
       )
     );
     const ok=results.map(r=>r.status==='fulfilled');
-    const [igT,fbT,ttT,adsT,resT,gadsT]=results.map(r=>r.status==='fulfilled'?r.value:null);
+    const [igT,fbT,adsT,resT,gadsT]=results.map(r=>r.status==='fulfilled'?r.value:null);
     const failCount=ok.filter(v=>!v).length;
-    if(failCount===6){throw new Error('Todos los sheets fallaron');}
+    if(failCount===5){throw new Error('Todos los sheets fallaron');}
 
     const ig=igT?parseCSV(igT):null;
     const fb=fbT?parseCSV(fbT):null;
-    const tt=ttT?parseCSV(ttT):null;
     const ads=adsT?parseCSV(adsT):null;
     const res=resT?parseCSV(resT):null;
     const gads=gadsT?parseCSV(gadsT):null;
@@ -1420,22 +1339,6 @@ async function loadSheetData(){
       D.fb.nextSteps=txts(rblLast(fb,'NEXT STEPS'),ac);
     }
 
-    // ── TikTok
-    if(tt&&ac){
-      D.tt.videos=nums(rbl(tt,'Videos publicados'),ac);
-      D.tt.inter =nums(rbl(tt,'Interacciones'),ac);
-      D.tt.seg   =nums(rbl(tt,'Seguidores'),ac);
-      D.tt.cont=[
-        {link:txts(rbl(tt,'Nombre video #1'),ac),
-         rep: nums(rbl(tt,'Reproducciones video #1'),ac),
-         likes:nums(rbl(tt,'Likes video #1'),ac),
-         guard:nums(rbl(tt,'Guardados video #1'),ac)},
-        {link:txts(rbl(tt,'Nombre video #2'),ac),
-         rep: nums(rbl(tt,'Reproducciones video #2'),ac),
-         likes:nums(rbl(tt,'Likes video #2'),ac),
-         guard:nums(rbl(tt,'Guardados video #2'),ac)},
-      ];
-    }
 
     // ── Meta Ads
     if(ads&&ac){
@@ -1495,7 +1398,7 @@ async function loadSheetData(){
 }
 
 // ── ROUTING ───────────────────────────────────────────────────────────────
-const RENDERS={resumen:rResumen,instagram:rInstagram,facebook:rFacebook,tiktok:rTikTok,ads:rAds,gads:rGads};
+const RENDERS={resumen:rResumen,instagram:rInstagram,facebook:rFacebook,ads:rAds,gads:rGads};
 
 function doRefresh(){
   loadSheetData();
