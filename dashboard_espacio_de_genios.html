@@ -125,6 +125,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cont-link:hover{text-decoration:underline}
 .badge-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ig);color:#fff;font-size:11px;font-weight:700}
 
+/* BOTÓN DESCARGA POR PÁGINA */
+.pg-dl-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.pg-dl-row .pbadge{margin-bottom:0}
+.pg-dl-btn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;box-shadow:var(--shadow);white-space:nowrap}
+.pg-dl-btn:hover{border-color:var(--acc);color:var(--acc)}
+
 /* PRINT ALL MODE — panels visibles para que Chart.js pueda renderizar */
 body.print-all .panel{display:block!important;position:relative}
 body.print-all .panel+.panel{margin-top:0}
@@ -147,6 +153,7 @@ body.print-all .panel+.panel{margin-top:0}
   .r-divider{break-after:avoid}
   body{background:#fff!important}
   .main{padding:16px}
+  .pg-dl-btn{display:none!important}
   /* Modo descargar todo */
   body.print-all .panel{display:block!important}
   body.print-all .panel+.panel{break-before:page;margin-top:0}
@@ -719,7 +726,10 @@ function rResumen(){
   const hChartHP = Math.max(160, SEL.length * 60 + 60);
 
   document.getElementById('p-resumen').innerHTML=`
-    <div class="pbadge">📊 ${MO[m]}${pLabel}</div>
+    <div class="pg-dl-row">
+      <div class="pbadge">📊 ${MO[m]}${pLabel}</div>
+      <button class="pg-dl-btn" onclick="doPrint()">📥 Descargar Resumen</button>
+    </div>
 
     ${sec('💰 Inversión Total Meta Ads')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
@@ -937,7 +947,10 @@ function rInstagram(){
   const insightLabel = insightM !== m ? `Insights · ${MO[insightM]} (último disponible)` : `Insights · ${MO[m]}`;
 
   document.getElementById('p-instagram').innerHTML=`
-    <div class="pbadge ig">📷 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+    <div class="pg-dl-row">
+      <div class="pbadge ig">📷 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+      <button class="pg-dl-btn" onclick="doPrint()">📥 Descargar Instagram</button>
+    </div>
 
     ${sec('Posicionamiento de marca')}
     <div class="kpi-grid">
@@ -1057,7 +1070,10 @@ function rFacebook(){
   const fbNextTxt    = D.fb.nextSteps[m] || 'Sin datos para este mes.';
 
   document.getElementById('p-facebook').innerHTML=`
-    <div class="pbadge fb">📘 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+    <div class="pg-dl-row">
+      <div class="pbadge fb">📘 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+      <button class="pg-dl-btn" onclick="doPrint()">📥 Descargar Facebook</button>
+    </div>
     <div class="kpi-grid">
       ${kpi('Espectadores únicos',D.fb.esp,'k','fb')}
       ${kpi('Visualizaciones totales',D.fb.views,'k','fb')}
@@ -1183,7 +1199,10 @@ function rAds(){
   const nextTxt   =D.ads.nextSteps[m] || 'Sin datos para este mes.';
 
   document.getElementById('p-ads').innerHTML=`
-    <div class="pbadge ads">📣 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+    <div class="pg-dl-row">
+      <div class="pbadge ads">📣 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+      <button class="pg-dl-btn" onclick="doPrint()">📥 Descargar Meta Ads</button>
+    </div>
     <div class="kpi-grid" style="max-width:340px">
       ${kpi('Inversión total',D.ads.inv,'money','ads')}
     </div>
@@ -1410,7 +1429,10 @@ function rGads(){
   const nextTxt   =D.gads.nextSteps[m] || 'Sin datos para este mes.';
 
   document.getElementById('p-gads').innerHTML=`
-    <div class="pbadge gads">🔍 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+    <div class="pg-dl-row">
+      <div class="pbadge gads">🔍 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+      <button class="pg-dl-btn" onclick="doPrint()">📥 Descargar Google Ads</button>
+    </div>
 
     ${sec('💰 Inversión Total Google Ads')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
