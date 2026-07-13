@@ -143,6 +143,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   .r-divider{break-after:avoid}
   body{background:#fff!important}
   .main{padding:16px}
+  /* Modo "descargar todo" */
+  body.print-all .panel{display:block!important}
+  body.print-all .panel+.panel{break-before:page;margin-top:0}
+  body.print-all .pbadge{margin-top:8px}
 }
 </style>
 </head>
@@ -154,7 +158,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div><h1>Espacio de Genios · Dashboard de Marketing</h1><p>Reporte mensual de redes sociales · 2026</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
-    <button class="dl-btn" onclick="doPrint()">📥 Descargar</button>
+    <button class="dl-btn" onclick="doPrintAll()">📥 Descargar todo</button>
     <button class="refresh-btn" onclick="doRefresh()">🔄 Actualizar</button>
     <span class="last-upd" id="last-upd"></span>
   </div>
@@ -486,11 +490,27 @@ function hBar(id,labels,data,fmtCb){
 
 // ── PRINT ─────────────────────────────────────────────────────────────────
 function doPrint(){
-  const tab=TAB;
   const names={resumen:'Resumen',instagram:'Instagram',facebook:'Facebook',ads:'Meta Ads',gads:'Google Ads'};
-  document.title=`EDG · ${names[tab]||tab} · ${selLbls().join('-')}`;
+  document.title=`EDG · ${names[TAB]||TAB} · ${selLbls().join('-')}`;
   window.print();
   document.title='Dashboard · Espacio de Genios';
+}
+
+async function doPrintAll(){
+  const TABS=['resumen','instagram','facebook','ads','gads'];
+  // Render todos los tabs
+  destroyAll();
+  TABS.forEach(t=>RENDERS[t]());
+  // Esperar 2 frames para que Chart.js pinte los canvas
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  document.title=`EDG · Dashboard completo · ${selLbls().join('-')}`;
+  document.body.classList.add('print-all');
+  window.print();
+  document.body.classList.remove('print-all');
+  document.title='Dashboard · Espacio de Genios';
+  // Restaurar solo el tab activo
+  destroyAll();
+  RENDERS[TAB]();
 }
 
 // ── AUTO INSIGHTS ──────────────────────────────────────────────────────────
