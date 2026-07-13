@@ -125,8 +125,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cont-link:hover{text-decoration:underline}
 .badge-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ig);color:#fff;font-size:11px;font-weight:700}
 
+/* AUTO INSIGHT */
+.auto-insight{background:linear-gradient(135deg,rgba(129,140,248,.06),rgba(167,139,250,.04));border-radius:var(--r);padding:20px 24px;box-shadow:var(--shadow);border-left:4px solid #818cf8}
+
+/* DOWNLOAD BTN */
+.dl-btn{padding:5px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
+.dl-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+
 @media(max-width:900px){.g2,.g3{grid-template-columns:1fr}.sticky{padding:0 14px}.main{padding:16px}}
-@media print{.sticky{display:none}.hdr{print-color-adjust:exact}.cc{break-inside:avoid}}
+@media print{
+  .sticky{display:none!important}
+  .hdr > div:last-child{display:none!important}
+  .panel{display:none!important}
+  .panel.active{display:block!important}
+  .hdr{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .cc{break-inside:avoid}
+  .r-divider{break-after:avoid}
+  body{background:#fff!important}
+  .main{padding:16px}
+}
 </style>
 </head>
 <body>
@@ -137,6 +154,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div><h1>Espacio de Genios · Dashboard de Marketing</h1><p>Reporte mensual de redes sociales · 2026</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
+    <button class="dl-btn" onclick="doPrint()">📥 Descargar</button>
     <button class="refresh-btn" onclick="doRefresh()">🔄 Actualizar</button>
     <span class="last-upd" id="last-upd"></span>
   </div>
@@ -466,6 +484,150 @@ function hBar(id,labels,data,fmtCb){
       scales:{x:{beginAtZero:true,ticks:{callback:fmtCb,font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:12}}}}}});
 }
 
+// ── PRINT ─────────────────────────────────────────────────────────────────
+function doPrint(){
+  const tab=TAB;
+  const names={resumen:'Resumen',instagram:'Instagram',facebook:'Facebook',ads:'Meta Ads',gads:'Google Ads'};
+  document.title=`EDG · ${names[tab]||tab} · ${selLbls().join('-')}`;
+  window.print();
+  document.title='Dashboard · Espacio de Genios';
+}
+
+// ── AUTO INSIGHTS ──────────────────────────────────────────────────────────
+function genAutoInsights(tab){
+  const m=lastM(), p=prevM();
+  const lines=[], next=[];
+
+  function chg(curr,prev){ if(curr==null||prev==null||prev===0)return null; return (curr-prev)/prev*100; }
+  function chgLine(lbl,curr,prev,fmtFn,negGood=false){
+    const c=chg(curr,prev); if(c===null||curr==null)return null;
+    const good=negGood?c<0:c>=0;
+    return `${good?'▲':'▼'} ${lbl}: ${fmtFn(curr)} (${c>=0?'+':''}${c.toFixed(1)}% vs ${MO[p]})`;
+  }
+
+  if(tab==='instagram'){
+    if(p!==null){
+      [
+        chgLine('Alcance',       D.ig.alcance[m], D.ig.alcance[p], fK),
+        chgLine('Interacciones', D.ig.inter[m],   D.ig.inter[p],   fK),
+        chgLine('Nuevos seguidores', D.ig.seg[m], D.ig.seg[p],     v=>fN(v,0)),
+        chgLine('Clics al bio',  D.ig.clics[m],   D.ig.clics[p],   fK),
+      ].filter(Boolean).forEach(l=>lines.push(l));
+    } else {
+      if(D.ig.alcance[m]!=null) lines.push(`📊 Alcance: ${fK(D.ig.alcance[m])} cuentas`);
+      if(D.ig.inter[m]!=null)   lines.push(`💬 Interacciones: ${fK(D.ig.inter[m])}`);
+      if(D.ig.seg[m]!=null)     lines.push(`👥 Nuevos seguidores: ${fN(D.ig.seg[m],0)}`);
+    }
+    if(D.ig.alcance[m]>0 && D.ig.inter[m]!=null)
+      lines.push(`📈 Tasa de engagement: ${(D.ig.inter[m]/D.ig.alcance[m]*100).toFixed(2)}%`);
+    if(D.ig.cont[0]?.nombre[m])
+      lines.push(`🏆 Mejor contenido: "${D.ig.cont[0].nombre[m]}" — ${fK(D.ig.cont[0].views[m])} views`);
+
+    const segC=chg(D.ig.seg[m],D.ig.seg[p]), alcC=chg(D.ig.alcance[m],D.ig.alcance[p]);
+    if(segC!==null&&segC<-5)  next.push(`📌 Seguidores bajaron ${Math.abs(segC).toFixed(1)}% — reforzar CTAs y contenido de valor.`);
+    if(alcC!==null&&alcC<-10) next.push(`📣 Alcance cayó ${Math.abs(alcC).toFixed(1)}% — considerar boost de publicaciones destacadas.`);
+    if(D.ig.gdReels[m]!=null&&D.ig.gdReels[m]>30) next.push(`💾 Alto volumen de guardados en Reels (${D.ig.gdReels[m]}) — replicar el formato.`);
+    if(alcC!==null&&alcC>10)  next.push(`🚀 Alcance creció ${alcC.toFixed(1)}% — continuar con la estrategia de contenido actual.`);
+  }
+
+  else if(tab==='facebook'){
+    if(p!==null){
+      [
+        chgLine('Espectadores únicos', D.fb.esp[m],    D.fb.esp[p],    fK),
+        chgLine('Visualizaciones',     D.fb.views[m],  D.fb.views[p],  fK),
+        chgLine('Nuevos seguidores',   D.fb.seg[m],    D.fb.seg[p],    fK),
+        chgLine('Clics en enlace',     D.fb.clics[m],  D.fb.clics[p],  fK),
+      ].filter(Boolean).forEach(l=>lines.push(l));
+    } else {
+      if(D.fb.esp[m]!=null)   lines.push(`👁️ Espectadores únicos: ${fK(D.fb.esp[m])}`);
+      if(D.fb.views[m]!=null) lines.push(`▶️ Visualizaciones: ${fK(D.fb.views[m])}`);
+    }
+    const fmts=[{lbl:'Reels',d:D.fb.reels[m]},{lbl:'Fotos',d:D.fb.foto[m]},{lbl:'Stories',d:D.fb.story[m]}].filter(f=>f.d!=null&&f.d>0);
+    if(fmts.length>0){ const best=fmts.reduce((a,b)=>b.d>a.d?b:a); lines.push(`🏆 Formato top: ${best.lbl} (${fK(best.d)} interacciones)`); }
+
+    const espC=chg(D.fb.esp[m],D.fb.esp[p]);
+    if(espC!==null&&espC<-10) next.push(`📉 Alcance cayó ${Math.abs(espC).toFixed(1)}% — evaluar frecuencia y horario de publicación.`);
+    if(D.fb.repro3s[m]!=null&&D.fb.repro3s[m]>10000) next.push(`▶️ Buen volumen de reproducciones +3s — aumentar inversión en Reels.`);
+    if(espC!==null&&espC>15) next.push(`🚀 Alcance creció ${espC.toFixed(1)}% — potenciar el contenido de mayor engagement.`);
+  }
+
+  else if(tab==='ads'){
+    if(D.ads.invTotal[m]!=null) lines.push(`💰 Inversión total: ${f$(D.ads.invTotal[m])}`);
+    if(D.ads.invCentro[m]!=null&&D.ads.invProy[m]!=null&&(D.ads.invTotal[m]||0)>0){
+      const t=D.ads.invTotal[m];
+      lines.push(`📊 Distribución: ${(D.ads.invCentro[m]/t*100).toFixed(0)}% Centro / ${(D.ads.invProy[m]/t*100).toFixed(0)}% Proyecto`);
+    }
+    if(p!==null){
+      const l=chgLine('Inversión total',D.ads.invTotal[m],D.ads.invTotal[p],f$);
+      if(l) lines.push(l);
+    }
+    const campData=Object.entries(D.ads.camps).filter(([,v])=>v.cpa[m]!=null&&v.cpa[m]>0).sort((a,b)=>a[1].cpa[m]-b[1].cpa[m]);
+    if(campData.length>0){
+      lines.push(`🏆 CPA más bajo: ${campData[0][0]} — ${f$(campData[0][1].cpa[m])}`);
+      if(campData.length>1) lines.push(`⚠️ CPA más alto: ${campData[campData.length-1][0]} — ${f$(campData[campData.length-1][1].cpa[m])}`);
+      next.push(`🎯 Escalar presupuesto en "${campData[0][0]}" — tiene el CPA más eficiente (${f$(campData[0][1].cpa[m])}).`);
+      if(campData.length>1) next.push(`🔍 Revisar creativos en "${campData[campData.length-1][0]}" — CPA de ${f$(campData[campData.length-1][1].cpa[m])} puede optimizarse.`);
+    }
+  }
+
+  else if(tab==='gads'){
+    if(D.gads.invTotal[m]!=null) lines.push(`💰 Inversión total: ${f$(D.gads.invTotal[m])}`);
+    if(p!==null){
+      const l=chgLine('Inversión total',D.gads.invTotal[m],D.gads.invTotal[p],f$);
+      if(l) lines.push(l);
+    }
+    const campData=Object.entries(D.gads.camps).filter(([,v])=>v.inv[m]!=null&&v.inv[m]>0);
+    const byConv=campData.filter(([,v])=>v.cvr[m]!=null&&v.cvr[m]>0).sort((a,b)=>b[1].cvr[m]-a[1].cvr[m]);
+    const byCpc=campData.filter(([,v])=>v.cpc[m]!=null&&v.cpc[m]>0).sort((a,b)=>a[1].cpc[m]-b[1].cpc[m]);
+    if(byConv.length>0) lines.push(`🏆 Mayor tasa de conversión: ${byConv[0][0]} — ${fN(byConv[0][1].cvr[m],2)}%`);
+    if(byCpc.length>0)  lines.push(`💡 CPC más eficiente: ${byCpc[0][0]} — ${f$(byCpc[0][1].cpc[m])}`);
+    campData.forEach(([k,v])=>{ if(v.ctr[m]!=null&&v.ctr[m]<1) next.push(`🔍 CTR bajo en "${k}" (${fN(v.ctr[m],2)}%) — revisar keywords y copys.`); });
+    if(byConv.length>0) next.push(`🎯 Aumentar presupuesto en "${byConv[0][0]}" — mejor tasa de conversión (${fN(byConv[0][1].cvr[m],2)}%).`);
+  }
+
+  else if(tab==='resumen'){
+    const totalInv=(D.ads.invTotal[m]||0)+(D.gads.invTotal[m]||0);
+    if(totalInv>0) lines.push(`💰 Inversión publicitaria total: ${f$(totalInv)}`);
+    if(D.ig.alcance[m]!=null&&D.fb.esp[m]!=null)
+      lines.push(`👥 Alcance orgánico combinado: ${fK(D.ig.alcance[m]+D.fb.esp[m])}`);
+    if(D.centro.total[m]!=null) lines.push(`💵 Facturación Centro: ${f$(D.centro.total[m])}`);
+    if(D.proy.cierres[m]!=null) lines.push(`🤝 Cierres del mes: ${fN(D.proy.cierres[m],0)}`);
+    if(D.proy.tasa[m]!=null)    lines.push(`📊 Tasa de cierre: ${fN(D.proy.tasa[m],1)}%`);
+    if((D.centro.total[m]||0)>0&&(D.ads.invCentro[m]||0)>0)
+      lines.push(`📈 ROAS Centro: ${(D.centro.total[m]/D.ads.invCentro[m]).toFixed(1)}x`);
+
+    if(p!==null){
+      const alcC=chg((D.ig.alcance[m]||0)+(D.fb.esp[m]||0),(D.ig.alcance[p]||0)+(D.fb.esp[p]||0));
+      if(alcC!==null) next.push(`${alcC>=0?'📈':'📉'} Alcance orgánico ${alcC>=0?'subió':'bajó'} ${Math.abs(alcC).toFixed(1)}% vs ${MO[p]}.`);
+    }
+    if(D.proy.tasa[m]!=null&&D.proy.tasa[m]<20) next.push(`🎯 Tasa de cierre baja (${fN(D.proy.tasa[m],1)}%) — revisar proceso de seguimiento.`);
+    if(D.proy.tasa[m]!=null&&D.proy.tasa[m]>40) next.push(`🚀 Excelente tasa de cierre (${fN(D.proy.tasa[m],1)}%) — aumentar volumen de leads.`);
+    if(D.proy.leads[m]>0&&D.proy.cierres[m]>0)
+      next.push(`📌 ${fN(D.proy.leads[m],0)} leads → ${fN(D.proy.cierres[m],0)} cierres. ${D.proy.presup[m]>0?'Presupuestos enviados: '+fN(D.proy.presup[m],0)+'.':''}`);
+  }
+
+  const insight   = lines.length>0 ? lines.join('\n') : 'Cargá los datos del mes para ver el análisis automático.';
+  const nextSteps = next.length>0  ? next.join('\n')  : 'El análisis automático se completa cuando hay datos comparativos disponibles.';
+  return {insight, nextSteps};
+}
+
+function autoBlock(tab,color){
+  const {insight,nextSteps}=genAutoInsights(tab);
+  const period=selLbls().join(', ');
+  return `
+  ${sec('🤖 Análisis automático · '+period)}
+  <div class="g2" style="margin-bottom:8px">
+    <div class="auto-insight" style="border-left-color:${color||'#818cf8'}">
+      <div class="block-label" style="color:${color||'#818cf8'}">📊 Resumen del período</div>
+      <div class="block-text">${insight}</div>
+    </div>
+    <div class="auto-insight" style="border-left-color:#10b981">
+      <div class="block-label" style="color:#10b981">🎯 Recomendaciones</div>
+      <div class="block-text">${nextSteps}</div>
+    </div>
+  </div>`;
+}
+
 // ── TAB: RESUMEN ──────────────────────────────────────────────────────────
 function rResumen(){
   const m=lastM(), p=prevM();
@@ -607,6 +769,8 @@ function rResumen(){
 
     ${sec('Impresiones · Instagram vs Facebook')}
     <div class="g1">${cc('r-imp','Impresiones / Visualizaciones por mes','Views totales IG vs Visualizaciones totales FB',280)}</div>
+
+    ${autoBlock('resumen','#6c3ee8')}
   `;
 
   // ── Gráfico Centro: barras HORIZONTALES (meses en Y, $ en X) ──
@@ -805,6 +969,7 @@ function rInstagram(){
       </div>
     </div>
 
+    ${autoBlock('instagram',C.ig)}
     ${sec(insightLabel)}
     <div class="g2">
       <div class="insight-block">
@@ -907,6 +1072,7 @@ function rFacebook(){
       </div>
     </div>
 
+    ${autoBlock('facebook',C.fb)}
     ${sec('Insights · '+MO[m])}
     <div class="g2">
       <div class="insight-block">
@@ -997,6 +1163,7 @@ function rAds(){
       ${kpi('Inversión total',D.ads.inv,'money','ads')}
     </div>
     ${campSections}
+    ${autoBlock('ads',C.ads)}
     ${sec('Insights · '+MO[m])}
     <div class="g2">
       <div class="insight-block">
@@ -1230,6 +1397,7 @@ function rGads(){
 
     ${campSections}
 
+    ${autoBlock('gads','#4285F4')}
     ${sec('Insights · '+MO[m])}
     <div class="g2">
       <div class="insight-block">
