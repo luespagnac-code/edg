@@ -341,6 +341,13 @@ const D = {
     cierres: Array(12).fill(null),
     tasa:    Array(12).fill(null),
   },
+  // ── Google · cuadro resumen (hoja Resumen) ──
+  gsum:{
+    inv:          Array(12).fill(null),
+    impresiones:  Array(12).fill(null),
+    clics:        Array(12).fill(null),
+    conversiones: Array(12).fill(null),
+  },
   // ── Google Ads ──
   gads:{
     invTotal:  Array(12).fill(null),
@@ -788,6 +795,20 @@ function rResumen(){
 
     <hr class="r-divider">
 
+    ${sec('🔍 Google · Resumen')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+      ${kpiAuto('Inversión Google', D.gsum.inv, 'money','gads')}
+      ${kpiAuto('Impresiones', D.gsum.impresiones, 'k','gads')}
+      ${kpiAuto('Clics', D.gsum.clics, 'k','gads')}
+      ${kpiAuto('Conversiones', D.gsum.conversiones, 'k','gads')}
+    </div>
+    <div class="g2" style="margin-top:8px">
+      ${cc('r-google-inv','Inversión Google','Período seleccionado',240)}
+      ${cc('r-google-metrics','Impresiones vs Clics','Período seleccionado',240)}
+    </div>
+
+    <hr class="r-divider">
+
     ${sec('Instagram · Métricas principales')}
     <div class="kpi-grid">
       ${kpiAuto('Alcance total',D.ig.alcance,'k','ig')}
@@ -885,6 +906,16 @@ function rResumen(){
   gBar('r-proy-inv',[
     {label:'Inversión Proyecto ($)',data:D.ads.invProy,color:C.ads},
   ],v=>'$'+fK(v));
+
+  // ── Google charts (SEL months) ──
+  gBar('r-google-inv',[
+    {label:'Inversión Google ($)',data:D.gsum.inv,color:'#4285F4'},
+  ],v=>'$'+fK(v));
+
+  gBar('r-google-metrics',[
+    {label:'Impresiones',data:D.gsum.impresiones,color:'#4285F4'},
+    {label:'Clics',      data:D.gsum.clics,      color:'#34A853'},
+  ]);
 
   // ── IG vs FB comparison charts ──
   gBar('r-alc',[
@@ -1596,6 +1627,10 @@ async function loadSheetData(){
         const v=(rblLast(res,'Tasa de cierre (%)')[c]||'').replace('%','').trim();
         const n=parseFloat(v); return isNaN(n)?null:n;
       });
+      D.gsum.inv         =nums(rbl(res,'Inversión total'),ac);
+      D.gsum.impresiones =nums(rbl(res,'Impresiones totales'),ac);
+      D.gsum.clics       =nums(rbl(res,'Clics totales'),ac);
+      D.gsum.conversiones=nums(rbl(res,'Conversiones'),ac);
     }
 
     updateMonthUI(); // reconstruir botones con datos ya cargados
