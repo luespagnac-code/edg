@@ -659,18 +659,14 @@ function genAutoInsights(tab){
 }
 
 function autoBlock(tab,color){
-  const {insight,nextSteps}=genAutoInsights(tab);
+  const {insight}=genAutoInsights(tab);
   const period=selLbls().join(', ');
   return `
   ${sec('🤖 Análisis automático · '+period)}
-  <div class="g2" style="margin-bottom:8px">
+  <div class="g1" style="margin-bottom:8px">
     <div class="auto-insight" style="border-left-color:${color||'#818cf8'}">
       <div class="block-label" style="color:${color||'#818cf8'}">📊 Resumen del período</div>
       <div class="block-text">${insight}</div>
-    </div>
-    <div class="auto-insight" style="border-left-color:#10b981">
-      <div class="block-label" style="color:#10b981">🎯 Recomendaciones</div>
-      <div class="block-text">${nextSteps}</div>
     </div>
   </div>`;
 }
