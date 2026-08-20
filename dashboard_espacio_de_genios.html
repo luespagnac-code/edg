@@ -252,6 +252,7 @@ const D = {
     invTotal:  Array(12).fill(null),
     invCentro: Array(12).fill(null),
     invProy:   Array(12).fill(null),
+    invTienda: Array(12).fill(null),
     msgs:      Array(12).fill(null),
     leads:     Array(12).fill(null),
     camps:{
@@ -341,6 +342,13 @@ const D = {
     cierres: Array(12).fill(null),
     tasa:    Array(12).fill(null),
   },
+  // ── Tienda (cuadro Tienda, hoja Resumen) ──
+  tienda:{
+    inv:      Array(12).fill(null),
+    ventas:   Array(12).fill(null),
+    ingresos: Array(12).fill(null),
+    roas:     Array(12).fill(null),
+  },
   // ── Google · cuadro resumen (hoja Resumen) ──
   gsum:{
     inv:          Array(12).fill(null),
@@ -401,7 +409,7 @@ const cc=(id,title,sub,h=265)=>`<div class="cc"><div class="cc-title">${title}</
 
 // ── CHART ENGINE ──────────────────────────────────────────────────────────
 const C={ig:'#E1306C',igL:'rgba(225,48,108,.15)',fb:'#1877F2',fbL:'rgba(24,119,242,.15)',
-  ads:'#00C49A',adsL:'rgba(0,196,154,.15)',acc:'#6c3ee8',accL:'rgba(108,62,232,.15)',
+  ads:'#00C49A',adsL:'rgba(0,196,154,.15)',acc:'#6c3ee8',accL:'rgba(108,62,232,.15)',tienda:'#10b981',
   prev:'rgba(160,160,160,.3)',prevB:'rgba(160,160,160,.65)',
   pal:['#6c3ee8','#00C49A','#3b82f6','#f59e0b','#8b5cf6','#ef4444']};
 
@@ -625,7 +633,7 @@ function genAutoInsights(tab){
   }
 
   else if(tab==='resumen'){
-    const totalInv=(D.ads.invTotal[m]||0)+(D.gads.invTotal[m]||0);
+    const totalInv=(D.ads.invCentro[m]||0)+(D.ads.invProy[m]||0)+(D.ads.invTienda[m]||0)+(D.gads.invTotal[m]||0);
     if(totalInv>0) lines.push(`💰 Inversión publicitaria total: ${f$(totalInv)}`);
     if(D.ig.alcance[m]!=null&&D.fb.esp[m]!=null)
       lines.push(`👥 Alcance orgánico combinado: ${fK(D.ig.alcance[m]+D.fb.esp[m])}`);
@@ -679,7 +687,7 @@ function rResumen(){
 
   // KPI universal: 1 mes → valor de ese mes + comparativa; varios meses → suma del período
   const kpiAuto=(label,data,fmt,cls,color)=>{
-    const fFn=fmt==='money'?f$:fmt==='pct'?(n=>n==null?'—':fN(n,1)+'%'):fK;
+    const fFn=fmt==='money'?f$:fmt==='pct'?(n=>n==null?'—':fN(n,1)+'%'):fmt==='x'?(n=>n==null?'—':fN(n,1)+'x'):fK;
     const style=color?`style="border-top-color:${color}"`:'';
     if(SEL.length===1){
       // Un mes: mostrar valor + comparativa vs mes anterior en el array
@@ -728,6 +736,13 @@ function rResumen(){
   const adsInvProy = D.ads.invProy.some(v=>v!=null&&v!==0) ? D.ads.invProy : campProySum;
   const campProyKpis=CAMP_PROY.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
 
+  // Inversión Total = suma de Centro + Proyecto + Tienda (no la fila suelta del sheet)
+  const invSumaTotal = MO.map((_,i) => {
+    const c=D.ads.invCentro[i], p=D.ads.invProy[i], t=D.ads.invTienda[i];
+    if(c==null&&p==null&&t==null) return null;
+    return (c||0)+(p||0)+(t||0);
+  });
+
   // Altura dinámica del gráfico horizontal
   const hChartH = Math.max(220, SEL.length * 80 + 60);
   const hChartHP = Math.max(160, SEL.length * 60 + 60);
@@ -740,9 +755,10 @@ function rResumen(){
 
     ${sec('💰 Inversión Total Meta Ads')}
     <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-      ${kpiAuto('Inversión Total', D.ads.invTotal, 'money','ads')}
+      ${kpiAuto('Inversión Total', invSumaTotal, 'money','ads')}
       ${kpiAuto('Inversión Centro', D.ads.invCentro, 'money','acc')}
       ${kpiAuto('Inversión Proyecto', D.ads.invProy, 'money','ads')}
+      ${kpiAuto('Inversión Tienda', D.ads.invTienda, 'money','',C.tienda)}
     </div>
 
     <hr class="r-divider">
@@ -778,6 +794,18 @@ function rResumen(){
     </div>
     <div class="g1" style="margin-top:8px">
       ${cc('r-camp-proy-inv','Inversión por campaña · Proyecto','$ por mes seleccionado',hChartHP)}
+    </div>
+
+    ${sec('🧸 Tienda')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+      ${kpiAuto('Inversión Tienda', D.tienda.inv, 'money','',C.tienda)}
+      ${kpiAuto('Ventas concretadas', D.tienda.ventas, 'k','',C.tienda)}
+      ${kpiAuto('Ingresos', D.tienda.ingresos, 'money','',C.tienda)}
+      ${kpiAuto('ROAS', D.tienda.roas, 'x','',C.tienda)}
+    </div>
+    <div class="g2" style="margin-top:8px">
+      ${cc('r-tienda-vent','Ventas concretadas','Período seleccionado',240)}
+      ${cc('r-tienda-inv','Inversión vs Ingresos · Tienda','Período seleccionado',240)}
     </div>
 
     ${sec('🏗️ Proyecto · Convertidos')}
@@ -895,6 +923,16 @@ function rResumen(){
     {label:'Terapias',      data:D.centro.ter_monto,color:'#8b5cf6'},
     {label:'Valoraciones',  data:D.centro.valor,    color:'#a78bfa'},
     {label:'Capacitaciones',data:D.centro.capac,    color:'#c4b5fd'},
+  ],v=>'$'+fK(v));
+
+  // ── Tienda charts (SEL months) ──
+  gBar('r-tienda-vent',[
+    {label:'Ventas concretadas',data:D.tienda.ventas,color:C.tienda},
+  ]);
+
+  gBar('r-tienda-inv',[
+    {label:'Inversión Tienda ($)',data:D.tienda.inv,     color:C.tienda},
+    {label:'Ingresos ($)',        data:D.tienda.ingresos,color:'#3b82f6'},
   ],v=>'$'+fK(v));
 
   // ── Proyecto charts (SEL months) ──
@@ -1592,6 +1630,7 @@ async function loadSheetData(){
       D.ads.invTotal =nums(rbl(ads,'Inversión total ($)'),ac);
       D.ads.invCentro=nums(rbl(ads,'Inversión Centro ($)'),ac);
       D.ads.invProy  =nums(rbl(ads,'Inversion Proyecto ($)'),ac);
+      D.ads.invTienda=nums(rbl(ads,'Inversion Tienda ($)'),ac);
       Object.assign(D.ads.camps,extractAdsCamps(ads,ac));
       D.ads.alcTotal=MO.map((_,i)=>Object.values(D.ads.camps).reduce((s,c)=>s+(c.alc[i]||0),0));
       D.ads.insights =ac.map(c=>(rblLast(ads,'INSIGHT')[c]||'').trim());
@@ -1611,7 +1650,7 @@ async function loadSheetData(){
 
     // ── Centro y Proyecto
     if(res&&ac){
-      D.centro.inv      =nums(rbl(res,'Inversion total ($)'),ac);
+      D.centro.inv      =nums(rbl(res,'Inversion total Centro ($)'),ac);
       D.centro.pk_cant  =nums(rbl(res,'Pre-Kinder (Cantidad)'),ac);
       D.centro.pk_monto =nums(rbl(res,'Pre-Kinder ($)'),ac);
       D.centro.ter_cant =nums(rbl(res,'Terapias individuales (Cantidad)'),ac);
@@ -1619,7 +1658,7 @@ async function loadSheetData(){
       D.centro.valor    =nums(rbl(res,'Valoraciones ($)'),ac);
       D.centro.capac    =nums(rbl(res,'Capacitaciones ($)'),ac);
       D.centro.total    =nums(rbl(res,'TOTAL CENTRO ($)'),ac);
-      D.proy.inv    =nums(rblLast(res,'Inversion Total ($)'),ac);
+      D.proy.inv    =nums(rblLast(res,'Inversion Total Proyecto ($)'),ac);
       D.proy.leads  =nums(rbl(res,'Interesados (leads recibidos)'),ac);
       D.proy.presup =nums(rbl(res,'Presupuestos enviados'),ac);
       D.proy.cierres=nums(rbl(res,'Cierres concretados'),ac);
@@ -1631,6 +1670,10 @@ async function loadSheetData(){
       D.gsum.impresiones =nums(rbl(res,'Impresiones totales'),ac);
       D.gsum.clics       =nums(rbl(res,'Clics totales'),ac);
       D.gsum.conversiones=nums(rbl(res,'Conversiones'),ac);
+      D.tienda.inv     =nums(rbl(res,'Inversion Tienda ($)'),ac);
+      D.tienda.ventas  =nums(rbl(res,'Ventas concretadas'),ac);
+      D.tienda.ingresos=nums(rbl(res,'Ingresos ($)'),ac);
+      D.tienda.roas    =nums(rbl(res,'ROAS'),ac);
     }
 
     updateMonthUI(); // reconstruir botones con datos ya cargados
